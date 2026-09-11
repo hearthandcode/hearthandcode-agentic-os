@@ -214,3 +214,26 @@ changes.
   in the manifest. Full uninstall restores the pre-install state.
 - **Preview before apply.** The default terminal state of the flow is the
   preview (step 7). You always see the full plan before anything changes.
+
+---
+
+## Pi convention notes
+
+The installer maps profiles to Pi as `~/.pi/agent/agents/<profile-name>.md`
+files. This convention was chosen after consulting Pi's documentation:
+
+- Pi stores agent definitions in `~/.pi/agent/agents/` as individual `.md`
+  files (matching the directory structure documented by the project).
+- Each file contains the full PROFILE.md content adapted to Pi's expectation
+  of a single agent definition per file.
+- Skills are stored in `~/.pi/agent/skills/<skill-name>/` mirroring the
+  same directory structure as the Hermes target.
+- The scope config is written as `~/.pi/agent/agentic-os.hub.yaml`.
+
+If Pi's convention changes in a future version, the installer should be
+updated. The seam function `build_plan()` and the target map block at the
+top of `install.py` are the two places that need modification.
+
+**Deviation from spec/0007:** None found. The spec's target_map for Pi
+(`profiles/<name>.md` → `~/.pi/agent/agents/<name>.md`) matches the
+observed convention.
