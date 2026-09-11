@@ -11,5 +11,4 @@
 #
 # project-name-codename
 # internal-server-hostname
-SOMETHING_PRIVATE
-SECRET_PROJECT
+# another-forbidden-name

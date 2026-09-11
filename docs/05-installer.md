@@ -155,11 +155,11 @@ The manifest is a JSON file at `<hub-root>/.agentic-os/install-manifest.json`.
   "manifest_version": 1,
   "installed_at_utc": "2026-09-11T16:30:00Z",
   "installer_version": "1.0.0",
-  "hub_root": "/home/user/agentic-hub",
+  "hub_root": "~/agentic-hub",
   "targets": ["hermes", "pi"],
   "files": [
     {
-      "path": "/home/user/.hermes/profiles/maker/SOUL.md",
+      "path": "~/.hermes/profiles/maker/SOUL.md",
       "sha256": "abc123...",
       "kind": "profile",
       "status": "ok",

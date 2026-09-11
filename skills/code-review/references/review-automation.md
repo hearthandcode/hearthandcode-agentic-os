@@ -50,7 +50,7 @@ it graduates to automation.** Review findings are a bug report against the proce
   keywords; force the parameterized helper. (Catches the injection class review keeps
   re-finding.)
 - **No secrets by pattern:** known credential shapes (long base64, `AKIA` prefixes,
-  `BEGIN PRIVATE KEY`) blocked at commit time.
+  password, token, and secret-like patterns) blocked at commit time.
 - **No new endpoints without explicit auth declaration:** framework-specific rule that
   fails when a route lacks its authorization annotation/middleware.
 - **Banned sinks:** `eval`, `exec`, dynamic `innerHTML` assignment, shell-string
