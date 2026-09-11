@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-system.foundations/schemas/design-tokens.schema.json",
+  "title": "Design Token Spec",
+  "description": "Validates a design token proposal document. Governs primitive, semantic, and component tokens with tier-specific requirements, theming coverage, and contrast enforcement.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "Hyphenated token name, unique within the tier and the system.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "maxLength": 64
+    },
+    "tier": {
+      "description": "Which token tier this proposal belongs to. Tier determines change governance and which files are affected.",
+      "type": "string",
+      "enum": ["primitive", "semantic", "component"]
+    },
+    "version": {
+      "description": "Semantic version of this token spec.",
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "status": {
+      "description": "Review lifecycle status.",
+      "type": "string",
+      "enum": ["draft", "in-review", "approved", "deprecated"]
+    },
+    "governanceTrack": {
+      "description": "Fast track for patches and docs-only changes; standard for all new tokens, semantic changes, and component API changes.",
+      "type": "string",
+      "enum": ["fast", "standard"]
+    },
+    "supersedes": {
+      "description": "Name of the token this one replaces, or null if this is a new addition.",
+      "oneOf": [
+        {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
+        {"type": "null"}
+      ]
+    },
+    "rationale": {
+      "description": "One-paragraph justification: what surface or component needs this value, and why the existing token set cannot serve it.",
+      "type": "string",
+      "minLength": 40,
+      "maxLength": 2000
+    },
+    "proposedValue": {
+      "description": "The token value(s). For primitives: raw value. For semantic: resolves-to primitive name plus optional transform. For component: the semantic token overridden and the override value.",
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 20,
+      "patternProperties": {
+        "^[a-z][a-z0-9-]*$": {
+          "oneOf": [
+            {"type": "string"},
+            {"type": "number"},
+            {"type": "object"},
+            {"type": "array"}
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "consumptionSurfaces": {
+      "description": "At least two surfaces or components where this token will be used. A token with one consumption surface should be a component-level override instead.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 2
+      },
+      "minItems": 2,
+      "maxItems": 20
+    },
+    "themeImplications": {
+      "description": "Values across all supported themes. A token with missing theme values will produce invisible or low-contrast UI in that theme.",
+      "type": "object",
+      "properties": {
+        "light": {
+          "description": "Value or resolution in the light theme. Use null if the token does not apply in this theme.",
+          "oneOf": [
+            {"type": "string"},
+            {"type": "number"},
+            {"type": "null"}
+          ]
+        },
+        "dark": {
+          "description": "Value or resolution in the dark theme. Use null if the token does not apply in this theme.",
+          "oneOf": [
+            {"type": "string"},
+            {"type": "number"},
+            {"type": "null"}
+          ]
+        },
+        "highContrast": {
+          "description": "Value or resolution in the high-contrast theme. Use null if the token does not apply in this theme.",
+          "oneOf": [
+            {"type": "string"},
+            {"type": "number"},
+            {"type": "null"}
+          ]
+        }
+      },
+      "required": ["light", "dark"],
+      "additionalProperties": {
+        "oneOf": [
+          {"type": "string"},
+          {"type": "number"},
+          {"type": "null"}
+        ]
+      }
+    },
+    "contrastCheck": {
+      "description": "Required for semantic foreground tokens. Declares the foreground/background pair and the expected WCAG ratio.",
+      "type": "object",
+      "properties": {
+        "foregroundToken": {"type": "string"},
+        "backgroundToken": {"type": "string"},
+        "expectedRatio": {
+          "description": "Expected contrast ratio as a decimal or ratio string.",
+          "type": "string",
+          "pattern": "^\\d+(\\.\\d+)?(:1)?$"
+        },
+        "wcagAAPass": {"type": "boolean"},
+        "wcagAAAPass": {"type": "boolean"}
+      },
+      "required": ["foregroundToken", "backgroundToken", "expectedRatio", "wcagAAPass"]
+    },
+    "migrationPath": {
+      "description": "If supersedes is set, a mapping of old token names to new ones. If this is an additive token with no replacement, write the string 'No migration needed.'",
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 2000
+    },
+    "openQuestions": {
+      "description": "Open items that must be resolved before approval.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": {"type": "string"},
+          "owner": {"type": "string"},
+          "resolveBy": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": ["question", "owner", "resolveBy"],
+        "additionalProperties": false
+      },
+      "maxItems": 10
+    }
+  },
+  "required": [
+    "name",
+    "tier",
+    "version",
+    "status",
+    "governanceTrack",
+    "rationale",
+    "proposedValue",
+    "consumptionSurfaces",
+    "themeImplications",
+    "migrationPath"
+  ],
+  "allOf": [
+    {
+      "description": "Semantic foreground tokens must include a contrast check.",
+      "if": {
+        "properties": {
+          "tier": { "const": "semantic" },
+          "name": { "pattern": "^color-(text|border|icon|focus)" }
+        },
+        "required": ["tier", "name"]
+      },
+      "then": {
+        "required": ["contrastCheck"]
+      }
+    },
+    {
+      "description": "Standard track tokens require at least two consumption surfaces.",
+      "if": {
+        "properties": {
+          "governanceTrack": { "const": "standard" }
+        },
+        "required": ["governanceTrack"]
+      },
+      "then": {
+        "properties": {
+          "consumptionSurfaces": {
+            "minItems": 2
+          }
+        }
+      }
+    },
+    {
+      "description": "Superseding tokens must have a migration path that is not 'No migration needed.'",
+      "if": {
+        "properties": {
+          "supersedes": {
+            "type": "string"
+          }
+        },
+        "required": ["supersedes"]
+      },
+      "then": {
+        "not": {
+          "properties": {
+            "migrationPath": { "const": "No migration needed." }
+          },
+          "required": ["migrationPath"]
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

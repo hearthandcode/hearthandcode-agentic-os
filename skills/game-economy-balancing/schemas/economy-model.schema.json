@@ -1,0 +1,354 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hearthandcode.com/schemas/economy-model.schema.json",
+  "title": "Game Economy Model",
+  "description": "Validates an economy model document produced by the game-economy-balancing skill. Required fields enforce the minimum viable model; optional fields add depth for live-ops and simulation.",
+  "type": "object",
+  "required": [
+    "gameTitle",
+    "version",
+    "status",
+    "gameProfile",
+    "currencies",
+    "personas",
+    "faucets",
+    "sinks",
+    "progression",
+    "diagnostics",
+    "ethicsReview"
+  ],
+  "properties": {
+    "gameTitle": {
+      "type": "string",
+      "description": "Full title of the game",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of the economy model",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Draft", "Review", "Active", "Deprecated"],
+      "default": "Draft"
+    },
+    "gameProfile": {
+      "type": "object",
+      "description": "Top-level game parameters that anchor the economy",
+      "required": ["genre", "targetPlayer", "monetizationModel", "hoursToEndgame"],
+      "properties": {
+        "genre": { "type": "string", "minLength": 1 },
+        "platform": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["PC", "Mobile", "Console", "Web"] },
+          "minItems": 1
+        },
+        "targetPlayer": {
+          "type": "string",
+          "enum": ["Casual", "Midcore", "Hardcore", "Mixed"]
+        },
+        "monetizationModel": {
+          "type": "string",
+          "enum": ["F2P", "Premium", "Subscription", "BattlePass", "Hybrid"]
+        },
+        "hoursToEndgame": {
+          "type": "number",
+          "description": "Estimated hours of play to complete target progression for the median persona",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    },
+    "currencies": {
+      "type": "array",
+      "description": "Every currency in the game economy",
+      "minItems": 1,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "required": ["symbol", "name", "type", "axis", "storage"],
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "Short uppercase symbol (e.g., AC, GP, FT)",
+            "pattern": "^[A-Z]{2,8}$"
+          },
+          "name": {
+            "type": "string",
+            "description": "Player-visible currency name",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "type": {
+            "type": "string",
+            "enum": ["primary_soft", "secondary_soft", "premium", "reputation", "seasonal", "limited"]
+          },
+          "axis": {
+            "type": "string",
+            "enum": ["vertical_progression", "horizontal_expression", "content_gating", "friction_recovery"],
+            "description": "The single design axis this currency occupies"
+          },
+          "storage": {
+            "type": "string",
+            "enum": ["uncapped", "hard_cap", "soft_cap"]
+          },
+          "initialSupply": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0
+          },
+          "conversionRules": {
+            "type": "array",
+            "description": "Cross-currency conversion paths involving this currency",
+            "items": {
+              "type": "object",
+              "required": ["toCurrency", "rate", "direction"],
+              "properties": {
+                "toCurrency": { "type": "string", "pattern": "^[A-Z]{2,8}$" },
+                "rate": { "type": "number", "minimum": 0.001 },
+                "direction": { "type": "string", "enum": ["one-way", "bidirectional"] },
+                "cap": { "type": "integer", "minimum": 0 },
+                "notes": { "type": "string", "maxLength": 500 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "personas": {
+      "type": "array",
+      "description": "Player persona segments used in simulation",
+      "minItems": 3,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "required": ["name", "hoursPerDay", "activeRatio", "spendRatio"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": ["Casual", "Midcore", "Hardcore", "Whale"],
+            "description": "Standard persona names; custom names allowed for game-specific segments"
+          },
+          "hoursPerDay": { "type": "number", "minimum": 0.1, "maximum": 24 },
+          "sessionsPerDay": { "type": "integer", "minimum": 1, "maximum": 50 },
+          "activeRatio": {
+            "type": "number",
+            "description": "Fraction of total play time spent in active earning activities",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "spendRatio": {
+            "type": "number",
+            "description": "Fraction of available income that the persona spends on sinks",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "skipDayCorrection": {
+            "type": "number",
+            "description": "Multiplier applied to total-days for missed play days (1.4 casual, 1.15 midcore, 1.0 hardcore)",
+            "minimum": 1.0,
+            "maximum": 2.0
+          },
+          "description": { "type": "string", "maxLength": 500 }
+        }
+      }
+    },
+    "faucets": {
+      "type": "array",
+      "description": "Every currency source in the economy",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["activity", "currency", "faucetType", "ratePerHour"],
+        "properties": {
+          "activity": { "type": "string", "minLength": 1 },
+          "currency": { "type": "string", "pattern": "^[A-Z]{2,8}$" },
+          "faucetType": {
+            "type": "string",
+            "enum": ["unbounded", "bounded", "skill"]
+          },
+          "ratePerHour": { "type": "number", "minimum": 0 },
+          "bound": {
+            "type": "integer",
+            "description": "Daily or account-lifetime cap for bounded faucets",
+            "minimum": 1
+          },
+          "conditions": { "type": "string", "maxLength": 500 }
+        }
+      }
+    },
+    "sinks": {
+      "type": "array",
+      "description": "Every currency drain in the economy",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["activity", "currency", "sinkType", "cost"],
+        "properties": {
+          "activity": { "type": "string", "minLength": 1 },
+          "currency": { "type": "string", "pattern": "^[A-Z]{2,8}$" },
+          "sinkType": {
+            "type": "string",
+            "enum": ["procedural", "aspirational", "social", "friction"]
+          },
+          "cost": { "type": "number", "minimum": 0 },
+          "frequency": {
+            "type": "string",
+            "enum": ["per_session", "per_day", "one_time", "per_use"]
+          },
+          "conditions": { "type": "string", "maxLength": 500 }
+        }
+      }
+    },
+    "progression": {
+      "type": "array",
+      "description": "Progression milestones with costs and time estimates per persona",
+      "minItems": 3,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": ["milestoneName", "currency", "cost", "curveModel"],
+        "properties": {
+          "milestoneName": { "type": "string", "minLength": 1 },
+          "currency": { "type": "string", "pattern": "^[A-Z]{2,8}$" },
+          "cost": { "type": "number", "minimum": 1 },
+          "curveModel": {
+            "type": "string",
+            "enum": ["linear", "quadratic", "exponential", "logarithmic"]
+          },
+          "timeToReach": {
+            "type": "object",
+            "description": "Hours-to-milestone per persona",
+            "additionalProperties": { "type": "number", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "object",
+      "description": "Aggregate diagnostic metrics from the 28-day simulation",
+      "required": ["sinkRatios", "inflationRates", "wealthGap", "firstUpgradeTime"],
+      "properties": {
+        "sinkRatios": {
+          "type": "object",
+          "description": "Sink ratio per currency at day 28",
+          "additionalProperties": { "type": "number", "minimum": 0, "maximum": 3 }
+        },
+        "inflationRates": {
+          "type": "object",
+          "description": "Average weekly inflation rate per currency (as decimal, e.g. 0.02 = 2%)",
+          "additionalProperties": { "type": "number", "minimum": -0.1, "maximum": 0.1 }
+        },
+        "wealthGap": {
+          "type": "number",
+          "description": "Top 10% average wealth divided by median wealth",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "firstUpgradeTimeMinutes": {
+          "type": "number",
+          "description": "Minutes of casual play to afford the first upgrade",
+          "minimum": 1,
+          "maximum": 600
+        },
+        "endgameTimeRatioCasualHardcore": {
+          "type": "number",
+          "description": "Casual persona endgame time divided by hardcore persona endgame time",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "monteCarlo": {
+          "type": "object",
+          "description": "Results from 1000-iteration Monte Carlo simulation",
+          "properties": {
+            "deadlockRateDay14": { "type": "number", "minimum": 0, "maximum": 1 },
+            "supplyCoefficientOfVariation": { "type": "number", "minimum": 0, "maximum": 1 },
+            "maxConsecutiveZeroLiquidityDays": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "ethicsReview": {
+      "type": "array",
+      "description": "Results of dark pattern audit per purchase flow",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["purchaseFlow", "status"],
+        "properties": {
+          "purchaseFlow": { "type": "string", "minLength": 1 },
+          "darkPatternsFound": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "obfuscated_pricing",
+                "false_urgency",
+                "pay_to_skip_fun",
+                "gacha_opacity",
+                "bury_free_path",
+                "exploit_vulnerability",
+                "premium_to_power"
+              ]
+            }
+          },
+          "mitigation": { "type": "string", "maxLength": 1000 },
+          "status": { "type": "string", "enum": ["Clean", "Flagged", "Redesigned"] }
+        }
+      }
+    },
+    "tuningHistory": {
+      "type": "array",
+      "description": "Record of every tuning change made to the model",
+      "items": {
+        "type": "object",
+        "required": ["date", "lever", "oldValue", "newValue", "reason"],
+        "properties": {
+          "date": { "type": "string", "format": "date" },
+          "lever": { "type": "string", "minLength": 1 },
+          "oldValue": { "type": "number" },
+          "newValue": { "type": "number" },
+          "deltaPercent": { "type": "number" },
+          "reason": { "type": "string", "maxLength": 500 },
+          "outcome": { "type": "string", "maxLength": 500 }
+        }
+      }
+    },
+    "dashboardSpec": {
+      "type": "array",
+      "description": "Live dashboard metric specifications",
+      "items": {
+        "type": "object",
+        "required": ["metricName", "healthyRange"],
+        "properties": {
+          "metricName": { "type": "string", "minLength": 1 },
+          "calculation": { "type": "string", "maxLength": 500 },
+          "healthyRange": { "type": "string", "maxLength": 100 },
+          "cautionRange": { "type": "string", "maxLength": 100 },
+          "escalationRange": { "type": "string", "maxLength": 100 },
+          "response": { "type": "string", "maxLength": 500 }
+        }
+      }
+    },
+    "riskRegister": {
+      "type": "array",
+      "description": "Known failure modes from case studies mapped to this design",
+      "items": {
+        "type": "object",
+        "required": ["failureMode", "analogousScenario"],
+        "properties": {
+          "failureMode": { "type": "string", "maxLength": 200 },
+          "analogousScenario": { "type": "string", "maxLength": 500 },
+          "triggerSignal": { "type": "string", "maxLength": 200 },
+          "preventativeMeasure": { "type": "string", "maxLength": 500 }
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 5000
+    }
+  }
+}

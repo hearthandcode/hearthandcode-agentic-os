@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mechanic-spec.schema.json",
+  "title": "Mechanic Spec",
+  "description": "Validation contract for a mechanic spec document. The YAML frontmatter and section headings of a mechanic spec map onto this schema; use it to gate specs before review.",
+  "type": "object",
+  "required": ["name", "version", "status", "owner", "last_updated", "rules", "parameters", "interaction_map", "edge_cases", "experience_intent", "playtest_plan"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Hyphenated lowercase mechanic name; doubles as the spec file stem."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Increments on every content change."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "ready-for-review", "approved", "in-development", "live", "deprecated"],
+      "description": "Review lifecycle state; only 'approved' specs enter production planning."
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1,
+      "description": "One accountable person or team — never a committee."
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date; must move whenever version moves."
+    },
+    "related": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Names of other specs or GDD sections this mechanic touches."
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 240,
+      "description": "One sentence: what the player does and what it produces."
+    },
+    "inputs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "State the mechanic reads when it runs."
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 12,
+        "not": {
+          "anyOf": [
+            { "type": "string", "pattern": "\\b(some|often|reasonable|approximately|about|usually)\\b" }
+          ]
+        },
+        "description": "Testable, falsifiable rules; vague quantifiers rejected by pattern."
+      }
+    },
+    "parameters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "default", "range", "owner"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "default": {
+            "type": ["number", "string"],
+            "description": "Numeric default, or string with unit (e.g. '1.5s')."
+          },
+          "range": {
+            "type": "string",
+            "description": "Tuning bounds as '<min>-<max>' or an enum description."
+          },
+          "owner": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "interaction_map": {
+      "type": "object",
+      "required": ["reads", "writes", "triggered_by", "interrupted_by"],
+      "properties": {
+        "reads": { "type": "array", "items": { "type": "string" } },
+        "writes": { "type": "array", "items": { "type": "string" } },
+        "triggered_by": { "type": "array", "items": { "type": "string" } },
+        "interrupted_by": { "type": "array", "items": { "type": "string" } }
+      },
+      "description": "Empty arrays are valid and are claims — assert 'none' consciously."
+    },
+    "edge_cases": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["case", "behavior"],
+        "properties": {
+          "case": {
+            "type": "string",
+            "description": "The situation: 'at zero charges', 'simultaneous triggers', 'mid-animation'."
+          },
+          "behavior": {
+            "type": "string",
+            "description": "The stated behavior; 'undefined' is invalid here."
+          }
+        }
+      }
+    },
+    "experience_intent": {
+      "type": "string",
+      "minLength": 80,
+      "description": "What the player should feel and what decision the mechanic exists to create."
+    },
+    "open_questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["question", "owner", "resolve_by"],
+        "properties": {
+          "question": { "type": "string" },
+          "owner": { "type": "string" },
+          "resolve_by": { "type": "string", "format": "date" }
+        }
+      }
+    },
+    "playtest_plan": {
+      "type": "object",
+      "required": ["question", "method", "participants", "by"],
+      "properties": {
+        "question": {
+          "type": "string",
+          "pattern": "^[Ww]ill players",
+          "description": "Behavioral question in the 'Will players X when Y?' form."
+        },
+        "method": {
+          "type": "string",
+          "enum": ["talk-through", "paper", "greybox", "build-with-telemetry", "simulation", "ab-test"]
+        },
+        "participants": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "by": { "type": "string", "format": "date" }
+      }
+    }
+  }
+}

@@ -1,0 +1,196 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://hearthandcode.com/schemas/level-spec.schema.json",
+  "title": "Level Specification",
+  "description": "Validates a level specification document against the level-and-encounter-design skill's contract. This schema is referred to in the skill workflow (section 04, step 4) and in the template header.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Unique level identifier within the game",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "level": {
+      "type": "string",
+      "description": "Parent game or project name."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["tutorial", "adventure", "puzzle", "exploration", "hybrid"],
+      "description": "Primary level type."
+    },
+    "intended_duration": {
+      "type": "string",
+      "description": "Estimated player time to complete, e.g. '10 minutes' or '30 minutes'.",
+      "pattern": "^\\d+\\s*(minutes?|min)$"
+    },
+    "estimated_duration_minutes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 120,
+      "description": "Estimated duration in minutes (numeric)."
+    },
+    "player_count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8,
+      "description": "Number of supported players. Default 1."
+    },
+    "skills_taught": {
+      "type": "array",
+      "description": "List of mechanics the level teaches.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true
+    },
+    "difficulty_target": {
+      "type": "string",
+      "enum": ["beginner", "intermediate", "advanced", "expert"],
+      "description": "Target difficulty tier for this level."
+    },
+    "zones": {
+      "type": "array",
+      "description": "Ordered spatial zones of the level, from spawn to exit.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Zone identifier, e.g. 'z01-entry-cave'."
+          },
+          "purpose": {
+            "type": "string",
+            "description": "Primary purpose of the zone: teach, rest, combat, puzzle, climax."
+          },
+          "estimated_seconds": {
+            "type": "number",
+            "description": "Player's estimated time in this zone, given typical skill level."
+          },
+          "enemies": {
+            "type": "array",
+            "description": "Optional list of enemy types in this zone.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "template": {
+            "type": "string",
+            "enum": ["arena", "gauntlet", "puzzle-lock", "boss", "transition", "rest"]
+          },
+          "has_rest_beat": {
+            "type": "boolean",
+            "description": "Whether this zone includes a rest moment."
+          }
+        },
+        "required": ["id", "purpose", "template"],
+        "additionalProperties": false
+      },
+      "minItems": 2
+    },
+    "encounters": {
+      "type": "array",
+      "description": "List of encounter clusters in the level.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^enc-",
+            "description": "Unique encounter ID."
+          },
+          "pattern": {
+            "type": "string",
+            "enum": ["arena", "gauntlet", "puzzle-lock", "boss", "mixed"]
+          },
+          "threat_level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "Subjective threat rating on 1–10 scale."
+          },
+          "expected_duration_seconds": {
+            "type": "number",
+            "minimum": 10.0
+          }
+        },
+        "required": ["id", "pattern"],
+        "additionalProperties": false
+      }
+    },
+    "difficulty_curve": {
+      "type": "object",
+      "description": "Broad stroke description of the curve shape.",
+      "properties": {
+        "shape": {
+          "type": "string",
+          "enum": ["ramp", "sawtooth", "plateau-climb", "climax"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Free-text description of the curve."
+        }
+      },
+      "required": ["shape"]
+    },
+    "gates": {
+      "type": "arrey",
+      "description": "List of gates that block progress.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["key-and-lock", "skill-gate", "combat-gate", "key-door"]
+          },
+          "zone": {
+            "type": "string",
+            "description": "Zone id where this gate sits."
+          },
+          "teaches_required": {
+            "type": "boolean",
+            "description": "Whether the required skill is taught before this gate."
+          }
+        },
+        "required": ["type", "zone"]
+      }
+    },
+    "checkpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "zone_id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": ["zone_id"]
+      }
+    },
+    "telemetry_goals": {
+      "type": "object",
+      "description": "Specific metrics to watch during playtesting.",
+      "examples": [
+        {"max_deaths_per_zone": 5},
+        {"time_per_checkpoint": "0:30–3:00"}
+      ]
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "intended_duration",
+    "skills_taught",
+    "difficulty_target",
+    "zones"
+  ],
+  "additionalProperties": false
+}

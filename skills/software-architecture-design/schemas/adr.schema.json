@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-os/skills/software-architecture-design/schemas/adr.schema.json",
+  "title": "Architecture Decision Record",
+  "description": "Validates the structured front section of an ADR document. The narrative sections (Context, Options, Consequences) are prose; this schema constrains the fields a tool can index and check: identity, status, dates, links, and revisit triggers.",
+  "type": "object",
+  "required": ["id", "title", "status", "date", "context", "options", "decision", "consequences"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^ADR-[0-9]{4,}$",
+      "description": "Sequential, zero-padded, never reused. Example: ADR-0007."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 120,
+      "description": "Imperative and specific, stating the choice: 'Use Postgres full-text search instead of a dedicated engine'. Not a noun like 'Search'."
+    },
+    "status": {
+      "enum": ["proposed", "accepted", "superseded", "rejected", "amended"],
+      "description": "Lifecycle state per the ADR reference. Accepted records are immutable; changes happen via new ADRs."
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "YYYY-MM-DD, the date the decision was made (not backfilled unless stated in context)."
+    },
+    "deciders": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Who decided. Names, roles, or team identifiers."
+    },
+    "context": {
+      "type": "string",
+      "minLength": 40,
+      "description": "The forces in play: requirements, constraints, current state, and the scenario IDs (e.g. Q3) that put pressure on this decision."
+    },
+    "options": {
+      "type": "array",
+      "minItems": 2,
+      "description": "At least two options, each steel-manned.",
+      "items": {
+        "type": "object",
+        "required": ["name", "pros", "cons", "chosen"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 3 },
+          "description": { "type": "string" },
+          "pros": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "Concrete benefits, tied to scenarios where possible."
+          },
+          "cons": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "Concrete costs. An option with empty cons is advocacy, not analysis."
+          },
+          "rejection_rationale": {
+            "type": "string",
+            "description": "Required when chosen=false: the argument that actually killed the option, specific enough to re-run the decision if the cons stop applying."
+          },
+          "chosen": { "type": "boolean" }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "chosen": { "const": false } } },
+            "then": { "required": ["rejection_rationale"] }
+          }
+        ]
+      }
+    },
+    "decision": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 300,
+      "description": "One imperative sentence: 'We will X.' If it cannot be one sentence, split the ADR."
+    },
+    "consequences": {
+      "type": "object",
+      "required": ["easier", "harder", "revisit_trigger"],
+      "additionalProperties": false,
+      "properties": {
+        "easier": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "harder": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "Every decision has a cost; an ADR listing none will be distrusted."
+        },
+        "new_obligations": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "What must now be maintained, measured, or documented."
+        },
+        "revisit_trigger": {
+          "type": "string",
+          "minLength": 20,
+          "description": "The observable, measurable condition under which this decision is re-examined, e.g. 'search p95 > 500 ms for two consecutive weeks'."
+        }
+      }
+    },
+    "links": {
+      "type": "array",
+      "description": "Decision-graph edges. An unlinked ADR is a disconnected monolith.",
+      "items": {
+        "type": "object",
+        "required": ["relation", "target"],
+        "additionalProperties": false,
+        "properties": {
+          "relation": {
+            "enum": ["supersedes", "amends", "relates-to", "requires"]
+          },
+          "target": {
+            "type": "string",
+            "pattern": "^(ADR-[0-9]{4,}|docs/.+|\\./.+)",
+            "description": "Another ADR id, or a repository document path."
+          }
+        }
+      }
+    }
+  }
+}
