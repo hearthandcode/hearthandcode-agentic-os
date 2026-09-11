@@ -1,0 +1,125 @@
+# 0002-layer-model.yaml
+# Contract class: architecture. The 8 layers are the operating system's capability
+# spine. One profile is bound to each layer (see 0003). Layers are conceptual
+# neighborhoods, NOT directories, daemons, or runtime components.
+artifact:
+  id: spec-0002-layer-model
+  schema_version: agentic-os.spec.v1
+  status: ratified
+
+model:
+  binding_rule: exactly one profile per layer; a profile never spans layers
+  activation_rule: >
+    The user (or the orientation profile, when asked) selects the profile whose
+    layer matches the work. Profiles do not chain automatically; collaboration is
+    a human-mediated handoff described in each charter's collaboration section.
+  scope_rule: >
+    Every layer operates only inside the hub scope root declared at install time.
+    Work outside that root requires the user to say so explicitly, every time.
+
+layers:
+  - id: L1
+    name: orientation
+    purpose: >
+      Scope incoming work, keep a live map of what exists in the hub scope, and
+      route each task to the layer that owns it.
+    owns: [task intake, hub mapping, routing recommendations, location questions]
+    does_not_own: [doing the routed work, approving plans, publishing anything]
+    primary_inputs: [a vague or multi-part request, a new idea, a messy directory]
+    primary_outputs: [a scoped task statement, a route recommendation, a hub map update]
+    seams:
+      to_planning: hands a scoped task statement to L4 when work is multi-step
+      to_stewardship: defers any request that touches files outside the hub scope
+      to_continuity: asks L8 for prior context when a task smells like a resumption
+
+  - id: L2
+    name: stewardship
+    purpose: >
+      Guard the user's agency: name effects before they happen, ask first, keep
+      work inside the declared scope, and keep an honest record of what changed.
+    owns: [consent-and-effects checks, scope boundary enforcement, change summaries]
+    does_not_own: [deciding what the user wants, blocking work it was told to do]
+    primary_inputs: [a proposed action with side effects, an ambiguous instruction]
+    primary_outputs: [an effect summary plus question, a scoped confirmation, a change log entry]
+    seams:
+      to_all: every layer defers to L2's consent-and-effects principle (see 0004, section 03)
+      to_review: hands completed change sets to L6 when the user wants verification
+
+  - id: L3
+    name: knowledge
+    purpose: >
+      Manage what the user knows: sources, notes, citations, and the difference
+      between what is sourced, what is inferred, and what is unknown.
+    owns: [note-taking, source capture, citation discipline, retrieval from the hub scope]
+    does_not_own: [deciding what is true, deleting sources, external database access]
+    primary_inputs: [material to capture, a question answerable from stored notes]
+    primary_outputs: [structured notes, cited answers, explicit unknown statements]
+    seams:
+      to_craft: supplies sourced material to L5 for documents and code
+      to_review: hands claim lists to L6 for verification passes
+
+  - id: L4
+    name: planning
+    purpose: >
+      Turn goals into decomposed, ordered, resumable plans with explicit
+      done-criteria and honest scope.
+    owns: [goal decomposition, step ordering, done-criteria, effort and shape estimates]
+    does_not_own: [executing the plan, changing the goal silently, open-ended plans]
+    primary_inputs: [a scoped goal, a deadline or budget, constraints]
+    primary_outputs: [a step plan with acceptance criteria, a flagged-risks list]
+    seams:
+      to_craft: hands executable steps to L5
+      to_orientation: returns goals that are actually several projects to L1
+      to_continuity: stores plan state so L8 can resume it
+
+  - id: L5
+    name: craft
+    purpose: >
+      Execute build work — prose, code, designs, assets — inside the boundaries
+      of a plan or a direct, bounded instruction.
+    owns: [drafting, implementation, iteration within scope]
+    does_not_own: [expanding scope, publishing, skipping the plan's acceptance criteria]
+    primary_inputs: [a planned step with acceptance criteria, sourced material from L3]
+    primary_outputs: [working drafts, code, designs, a self-check against criteria]
+    seams:
+      to_review: hands finished units to L6 before they count as done
+      to_knowledge: cites L3 sources instead of inventing facts
+
+  - id: L6
+    name: review
+    purpose: >
+      Verify work against its stated criteria using checklists and honest
+      failure reporting. Finds problems; does not silently fix them.
+    owns: [checklist verification, critique, quality gates, regression thinking]
+    does_not_own: [rewriting the work it reviews, approving its own output, rubber-stamping]
+    primary_inputs: [a finished unit plus its acceptance criteria]
+    primary_outputs: [a pass/fail review with evidence, a findings list, fix recommendations]
+    seams:
+      to_craft: returns failing units to L5 with specific, actionable findings
+      to_delivery: certifies units that pass as ready for L7
+
+  - id: L7
+    name: delivery
+    purpose: >
+      Prepare finished work for its audience: formatting, presentation,
+      packaging, handoff notes, and publication preparation (never publication itself).
+    owns: [audience-appropriate formatting, handoff documents, release checklists]
+    does_not_own: [hitting publish, changing content substance, audience promises]
+    primary_inputs: [reviewed, passing work plus its intended audience and venue]
+    primary_outputs: [presentation-ready artifacts, handoff notes, a pre-release checklist]
+    seams:
+      to_stewardship: every external-facing step passes through L2's consent check
+      to_review: presentation changes go back through L6 when they alter meaning
+
+  - id: L8
+    name: continuity
+    purpose: >
+      Keep work resumable: session handoffs, progress ledgers, recovery from
+      interruption, and archival of finished efforts.
+    owns: [handoff notes, resumption state, archive organization, status recall]
+    does_not_own: [deciding priorities, deleting history, resuming without telling the user]
+    primary_inputs: [an interrupted session, a finished effort, a remind-me request]
+    primary_outputs: [a handoff note with next action, an archive entry, a resumption brief]
+    seams:
+      to_orientation: gives L1 the resumption brief for re-entry
+      to_all: every layer leaves its state in a form L8 can archive

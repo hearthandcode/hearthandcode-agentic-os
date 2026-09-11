@@ -1,0 +1,79 @@
+# 0009-repository-layout.yaml
+# Contract class: structure. The canonical tree. Implementation MUST produce
+# exactly this shape (plus the per-skill supporting dirs listed in 0005).
+# New top-level entries require amending this file first.
+artifact:
+  id: spec-0009-repository-layout
+  schema_version: agentic-os.spec.v1
+  status: ratified
+
+tree: |
+  hearthandcode-agentic-os/
+    README.md                     # stranger-test target: understand + install in <10 minutes
+    LICENSE                       # MIT (decision: 0001)
+    CONTRIBUTING.md               # how to propose skills/profiles; style + safety rules
+    install.py                    # the guided TUI installer (contract: 0007)
+    .gitignore                    # excludes .leak-scan-tokens.txt, __pycache__, OS noise
+    .leak-scan-tokens.example.txt # placeholder token list for the scanner (0008)
+    docs/
+      00-overview.md              # what this is, the layer model in one page, quickstart
+      01-operating-principles.md  # consent-and-effects, hub scope, claim labels, pause-and-ask
+      02-layer-model.md           # the 8 layers rendered from 0002, with collaboration map
+      03-profiles.md              # the 8 profiles: when to use each, how to switch, how to customize
+      04-skills.md                # the skill system: anatomy, the 16 skills, writing your own
+      05-installer.md             # installer reference: flags, targets, manifest, uninstall, Pi deviation log
+      06-extending.md             # adding profiles/skills, the contracts to follow, submission checklist
+    profiles/
+      pathfinder/PROFILE.md
+      steward/PROFILE.md
+      librarian/PROFILE.md
+      waymaker/PROFILE.md
+      maker/PROFILE.md
+      critic/PROFILE.md
+      herald/PROFILE.md
+      archivist/PROFILE.md
+    skills/
+      game-mechanics-design/        # per 0005 manifest + 0006 contract
+      level-and-encounter-design/
+      game-economy-balancing/
+      software-architecture-design/
+      code-review/
+      testing-strategy/
+      story-and-narrative-design/
+      brainstorming-and-ideation/
+      marketing-strategy/
+      copywriting-and-messaging/
+      business-planning/
+      operations-and-process-design/
+      social-media-strategy/
+      content-calendar-planning/
+      ui-design-critique/
+      design-system-foundations/
+    scripts/
+      verify_repo.py                # the shape checker (contract: 0010)
+      scan_leaks.py                 # the leak scanner (contract: 0008)
+    spec/
+      0001-governance-decisions.yaml
+      0002-layer-model.yaml
+      0003-profile-fleet.yaml
+      0004-profile-charter-template.yaml
+      0005-skill-roster.yaml
+      0006-skill-charter-contract.yaml
+      0007-installer-contract.yaml
+      0008-abstraction-and-safety.yaml
+      0009-repository-layout.yaml
+      0010-verification-contract.yaml
+      0011-implementation-handoff.md
+
+naming_conventions:
+  directories: lowercase-hyphenated
+  profile_charter: PROFILE.md (installer maps to harness-specific names; see 0007 target_map)
+  skill_charter: SKILL.md
+  reference_files: lowercase-hyphenated .md (schemas may be .json)
+  docs: NN-kebab-title.md, numbered in reading order
+
+rules:
+  - no file outside this tree without amending this contract first
+  - spec/ is permanent maintainer documentation and ships with the repo
+  - no scratch, state, cache, or internal-notes files may appear anywhere in the tree
+  - every path in this tree is referenced from README.md or a docs/ file

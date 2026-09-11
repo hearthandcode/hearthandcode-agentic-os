@@ -1,0 +1,114 @@
+# 0007-installer-contract.yaml
+# Contract class: behavior. The guided TUI installer is the product's front
+# door. Single file: install.py. Python 3.9+ standard library ONLY — no pip
+# installs, no curses dependency beyond the stdlib module, no network, ever.
+artifact:
+  id: spec-0007-installer-contract
+  schema_version: agentic-os.spec.v1
+  status: ratified
+
+identity:
+  file: install.py (repository root)
+  runtime: python >= 3.9, standard library only
+  platforms: [linux, macos]
+  entry: "python3 install.py  (interactive TUI is the default)"
+  flags:
+    --dry-run: "print the full change plan and exit; never touches the filesystem"
+    --yes: "non-interactive; accept all defaults (both harnesses if detected, all profiles, all skills, default hub root)"
+    --target: "comma subset of {hermes, pi}; overrides interactive target choice"
+    --hub-root: "path; overrides interactive hub-root prompt"
+    --uninstall: "remove exactly what the recorded manifest installed, then exit"
+    --manifest: "path to manifest file (default is <hub-root>/.agentic-os/install-manifest.json)"
+
+guided_flow:
+  step_1_welcome:
+    - print product name, one-paragraph what-it-does, and the safety guarantees (no network, dry-run preview, reversible)
+    - require an explicit keypress to continue
+  step_2_detect:
+    - hermes detected iff ~/.hermes exists
+    - pi detected iff ~/.pi/agent exists
+    - report detection results; a harness that is not detected may still be selected (targets are created)
+  step_3_choose_targets:
+    - "menu: [1] Hermes  [2] Pi  [3] both — default: both if detected, else whichever is detected"
+  step_4_declare_hub_scope:
+    - prompt for the operational hub root (default ~/agentic-hub)
+    - explain in two sentences that all agent work is confined to this directory and the boundary is written into every installed config
+    - create the directory (and .agentic-os/ inside it) on apply, not on preview
+  step_5_select_profiles:
+    - checklist of the 8 profiles with one-line roles (from 0003); default all selected; accepts 'all', 'none', or comma-separated numbers
+  step_6_select_skills:
+    - checklist of the 16 skills grouped by domain (from 0005); default all selected; same selection grammar
+  step_7_preview:
+    - the DEFAULT terminal state of the flow; print the full plan with every file that would be written, grouped by target, with counts and total size
+    - "prompt: Apply this plan? [y/N] — N drops back to step 3"
+  step_8_apply:
+    - copy files per the target map below; never follow symlinks outside the plan; back up any pre-existing target file into <hub-root>/.agentic-os/backup/ before overwriting
+  step_9_verify:
+    - re-read every written file; validate YAML frontmatter parses; check PROFILE.md/SKILL.md substantive-line counts against contracts; confirm hub-scope config written in each target
+    - print per-item OK/FAIL; any FAIL prints the remediation hint and is recorded in the manifest as failed
+  step_10_next_steps:
+    - "print: how to load a profile in each harness, where the hub root is, how to uninstall, and a pointer to docs/00-overview.md"
+
+target_map:
+  hermes:
+    profiles: "each selected profile -> ~/.hermes/profiles/<profile-name>/SOUL.md  (PROFILE.md content)"
+    skills: "each selected skill -> ~/.hermes/skills/<skill-name>/ (whole skill directory)"
+    scope_config: ~/.hermes/agentic-os.hub.yaml
+  pi:
+    profiles: "each selected profile -> ~/.pi/agent/agents/<profile-name>.md"
+    profiles_note: >
+      SEAM TO VERIFY AT IMPLEMENTATION TIME: confirm Pi's current agent-file
+      convention (file name, location, frontmatter) against Pi's own docs before
+      writing. If the convention differs, adapt the target and record the
+      deviation in docs/05-installer.md. Do not guess.
+    skills: "each selected skill -> ~/.pi/agent/skills/<skill-name>/ (whole skill directory)"
+    scope_config: ~/.pi/agent/agentic-os.hub.yaml
+
+scope_config_format:
+  filename: agentic-os.hub.yaml
+  content:
+    hub_root: absolute path declared at step 4
+    installed_by: hearthandcode-agentic-os installer
+    version: installer version string
+    note: >
+      Agent work is confined to hub_root. Profiles installed by this package
+      reference this file; treat any write outside hub_root as requiring
+      explicit user instruction.
+
+manifest:
+  path: <hub-root>/.agentic-os/install-manifest.json
+  schema:
+    manifest_version: 1
+    installed_at_utc: ISO-8601
+    installer_version: string
+    hub_root: absolute path
+    targets: "[subset of hermes, pi]"
+    files: "list of {path, sha256, kind (profile|skill|config), status (ok|failed), backed_up_from (optional path)}"
+  rules:
+    - the manifest records EVERY file written, hashed after write
+    - uninstall reads the manifest and removes exactly those files (newest manifest wins); it refuses to remove a file whose current sha256 differs from the manifest without --force
+    - uninstall removes empty parent directories it created, and leaves the hub root and user content untouched
+
+safety_rules:
+  - no network calls, no telemetry, no subprocess package installation
+  - never read, print, or copy secrets, .env files, SSH keys, or credential stores
+  - "never write outside: the selected harness config dirs, the hub root, and the manifest/backup dirs"
+  - refuse to run as root unless the user explicitly confirms
+  - every destructive possibility (overwrite) is preceded by a backup recorded in the manifest
+
+code_seams:  # single file, but these function boundaries are mandatory
+  - "detect_harnesses() -> {hermes: bool, pi: bool}"
+  - "choose_targets(detected, flags) -> [targets]"
+  - "declare_hub_root(flags) -> absolute path (validate: not $HOME itself, not /, writable parent)"
+  - "select_components(roster, kind, flags) -> [selected names]"
+  - "build_plan(targets, hub_root, profiles, skills) -> [FileOp(source, dest, kind)]"
+  - "preview_plan(plan) -> prints grouped plan; returns nothing"
+  - "apply_plan(plan, backup_dir) -> writes files, returns results"
+  - "verify_install(results) -> per-file checks (frontmatter parse, line counts)"
+  - "write_manifest(results, hub_root) -> manifest path"
+  - "uninstall(manifest_path, force) -> removal report"
+  - "main() -> orchestrates the guided flow; pure prompt I/O isolated from the seams above so each seam is unit-testable"
+
+degradation:
+  - if the terminal is non-interactive (no TTY) and --yes is absent, print usage and exit non-zero
+  - all menus accept plain numeric input; no arrow-key dependency

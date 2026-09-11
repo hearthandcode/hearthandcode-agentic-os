@@ -1,0 +1,70 @@
+# 0010-verification-contract.yaml
+# Contract class: verification. Every check is mechanical and runnable. Nothing
+# counts as done until this whole file passes. scripts/verify_repo.py implements
+# sections 1-3; section 4 is the installer's own dry-run matrix; section 5 is human.
+artifact:
+  id: spec-0010-verification-contract
+  schema_version: agentic-os.spec.v1
+  status: ratified
+
+revision_policy:
+  max_cycles_per_failure_class: 3
+  rule: fix the class, not the instance — when a check fails, audit all siblings for the same flaw before re-running
+
+checks:
+
+  shape:  # verify_repo.py --shape
+    profiles:
+      - exactly 8 directories under profiles/, each containing PROFILE.md
+      - each PROFILE.md parses its YAML frontmatter (name, layer, version, description present)
+      - each PROFILE.md carries all 8 sections from 0004 in order
+      - each PROFILE.md has 256-512 substantive lines (counting rule from 0006)
+      - layer bindings match 0003 exactly; cross-references use only the 8 public profile names
+    skills:
+      - exactly 16 directories under skills/, matching the 0005 roster exactly
+      - each SKILL.md parses its YAML frontmatter (name, description present; description leads with when-to-use)
+      - each SKILL.md carries all 8 sections from 0006 in order
+      - each SKILL.md has 504-520 substantive lines (target 512)
+      - each skill's references/ holds exactly 8 files matching its 0005 manifest byte-for-byte on filenames
+      - each skill's supporting dirs match its 0005 manifest exactly (no missing, no extras, none empty)
+    reference_resolution:
+      - every filename mentioned in every SKILL.md exists in that skill's directory
+      - every file in every skill directory is mentioned in its SKILL.md (bidirectional closure)
+      - the Supporting Files Index table matches the directory listing exactly
+
+  leaks:  # scan_leaks.py (also runnable standalone)
+    - scan every git-tracked file, case-insensitive, for the maintainer token list (.leak-scan-tokens.txt)
+    - scan for the always-active patterns from 0008 (home paths, emails, IPs, private keys)
+    - scan git log messages for the same tokens if the repo has history
+    - exit non-zero on any match; print file:line:pattern
+
+  installer_static:  # verify_repo.py --installer
+    - install.py imports nothing outside the Python standard library (AST walk)
+    - install.py contains no network-capable imports (socket, urllib, http, requests) and no subprocess package managers
+    - every function seam from 0007 exists with the documented signature
+    - --dry-run performs zero filesystem writes (verified by running it against a monitored temp HOME)
+
+  installer_dry_run_matrix:  # fresh scratch HOME per cell; HOME env redirected
+    - cell A: hermes target only — preview matches applied changes exactly; profiles land at $HOME/.hermes/profiles/<name>/SOUL.md; skills at $HOME/.hermes/skills/<name>/; scope config written with the declared hub_root
+    - cell B: pi target only — same assertions against $HOME/.pi/agent/ targets
+    - cell C: both targets — union of A and B; no file written twice; single manifest
+    - every cell: verify step reports OK for all files; manifest written with correct sha256 entries; uninstall restores the scratch HOME byte-for-byte (directory hash comparison before/after)
+
+  fresh_reader:  # human check, recorded in the verification report
+    - read README.md as a stranger: can you understand the system and install it in under 10 minutes?
+    - read one full SKILL.md and one full PROFILE.md: is any outside knowledge required to use them?
+    - any failure here is a content defect — revise the document, not the test
+
+definition_of_done:
+  - all shape checks pass
+  - leak scan exits clean
+  - installer static checks pass
+  - all three dry-run matrix cells pass, including uninstall round-trips
+  - fresh-reader check recorded as passed (with the reader's notes)
+  - no TODO/FIXME/placeholder strings anywhere in tracked files
+  - the tree matches 0009 exactly
+  - verification report written to the implementer's handoff (not committed): what ran, what passed, what was revised
+
+report_format:
+  per_check: "name, command run, result, evidence (counts, file lists, hashes)"
+  failures: "failure, root cause, fix applied, cycle count"

@@ -1,0 +1,360 @@
+# 0005-skill-roster.yaml
+# Contract class: roster. The 16 skills, their domains, purposes, and the exact
+# 8-file reference manifest for each. Implementation MUST match these manifests;
+# the verification suite (0010) diffs each skill directory against this file.
+artifact:
+  id: spec-0005-skill-roster
+  schema_version: agentic-os.spec.v1
+  status: ratified
+
+roster_summary:
+  total: 16
+  distribution: {game-design: 3, software-development-and-architecture: 3, creative-work: 2,
+                 marketing: 2, business-management: 2, social-media-management: 2, ui-design: 2}
+  charter_contract: spec/0006-skill-charter-contract.yaml
+
+skills:
+
+  # ── Domain: game design (3) ──────────────────────────────────────────────
+  - name: game-mechanics-design
+    domain: game-design
+    purpose: >
+      Design, specify, and iterate on game mechanics — from core loop to
+      individual mechanic specification — with playtesting built in from the start.
+    when_to_use: [designing a new game's core loop, specifying a single mechanic rigorously,
+                  diagnosing why a mechanic feels bad, preparing a mechanic for prototyping]
+    when_not: [pure narrative work (use story-and-narrative-design),
+               math-only economy tuning (use game-economy-balancing)]
+    references:
+      - core-loop-design.md            # methodology: loop anatomy, 30-second and 30-minute loops
+      - mechanics-taxonomy.md          # pattern catalog: action, system, progression, social mechanics
+      - player-motivation-models.md    # reference: intrinsic/extrinsic motivation, player archetypes
+      - prototyping-playbook.md        # methodology: paper and digital prototyping, fastest-testable-thing
+      - mechanics-documentation.md     # template guide: how to write a mechanic spec others can build
+      - balancing-fundamentals.md      # methodology: levers, cost curves, dominant-strategy checks
+      - playtesting-methods.md         # methodology: recruitment, protocols, observation, feedback triage
+      - mechanics-case-studies.md      # case study: 4 well-known mechanics dissected and re-derived
+    supporting: [templates/mechanic-spec-template.md, templates/game-design-doc-template.md,
+                 schemas/mechanic-spec.schema.json, examples/worked-mechanic-design.md]
+    worked_example_seed: design a roguelite 'one more run' upgrade mechanic from brief to playtest plan
+
+  - name: level-and-encounter-design
+    domain: game-design
+    purpose: >
+      Design levels and encounters that teach, pace, and pay off — spatial
+      composition, difficulty curves, and environmental storytelling.
+    when_to_use: [laying out a level, designing a combat or puzzle encounter,
+                  fixing pacing problems, planning a difficulty curve across a game]
+    when_not: [systems/mechanics invention (use game-mechanics-design),
+               pure environment art direction (use ui-design-critique for 2D layout feedback)]
+    references:
+      - level-design-principles.md     # methodology: readability, affordance, flow, gating
+      - pacing-and-difficulty-curves.md # methodology: intensity arcs, rest beats, ramp design
+      - encounter-design-patterns.md   # pattern catalog: arena, gauntlet, puzzle-lock, boss structures
+      - spatial-composition.md         # methodology: sightlines, landmarks, loops, chokepoints
+      - narrative-through-environment.md # methodology: environmental storytelling techniques
+      - level-metrics-and-telemetry.md # metrics guide: completion, death heatmaps, time-to-finish
+      - playtesting-levels.md          # methodology: level-specific test protocols and iteration
+      - level-case-studies.md          # case study: 3 classic levels annotated beat by beat
+    supporting: [templates/level-spec-template.md, schemas/level-spec.schema.json,
+                 examples/worked-level-design.md]
+    worked_example_seed: design a 10-minute introductory level that teaches three mechanics without text
+
+  - name: game-economy-balancing
+    domain: game-design
+    purpose: >
+      Design and tune in-game economies — currencies, sources, sinks,
+      progression pacing — with ethical monetization boundaries.
+    when_to_use: [designing currencies and resources, tuning progression pacing,
+                  finding inflation or dead-end sinks, reviewing monetization for fairness]
+    when_not: [single-mechanic feel problems (use game-mechanics-design),
+               real-money business modeling (use business-planning)]
+    references:
+      - economy-design-fundamentals.md # methodology: sources, sinks, faucets, closed loops
+      - currencies-and-resources.md    # pattern catalog: hard/soft currency, consumables, inventory
+      - progression-systems.md         # methodology: XP curves, unlock pacing, mastery systems
+      - monetization-ethics.md         # rubric: dark-pattern checklist, fairness tests, disclosure
+      - economy-modeling.md            # methodology: spreadsheet modeling, simulation basics
+      - tuning-and-balancing-methods.md # checklist: levers, A/B thinking, change one variable
+      - live-economy-monitoring.md     # metrics guide: inflation signals, sink health, player segments
+      - economy-case-studies.md        # case study: two economies — one healthy, one collapsed
+    supporting: [templates/economy-model-template.md, schemas/economy-model.schema.json,
+                 examples/worked-economy-balance.md]
+    worked_example_seed: build a two-currency economy model for a crafting game and tune its first month
+
+  # ── Domain: software development & architecture (3) ─────────────────────
+  - name: software-architecture-design
+    domain: software-development-and-architecture
+    purpose: >
+      Design software systems: decompose components, choose styles, record
+      decisions, and evaluate against quality attributes.
+    when_to_use: [starting a new system or major subsystem, choosing between architecture styles,
+                  documenting decisions for a team, reviewing an existing architecture]
+    when_not: [line-level code feedback (use code-review), test planning (use testing-strategy)]
+    references:
+      - architecture-decision-records.md # methodology: ADR format, lifecycle, linking decisions
+      - architecture-styles-catalog.md   # pattern catalog: layered, hexagonal, event-driven, microkernel
+      - quality-attribute-scenarios.md   # methodology: performance, modifiability, security scenarios
+      - component-decomposition.md       # methodology: cohesion, coupling, boundary discovery
+      - api-design-principles.md         # methodology: resource modeling, versioning, error design
+      - data-modeling-basics.md          # methodology: entities, relationships, normalization trade-offs
+      - architecture-review-checklist.md # checklist: 40-point review across structure and risk
+      - architecture-case-studies.md     # case study: one monolith and one modular design compared
+    supporting: [templates/adr-template.md, templates/architecture-overview-template.md,
+                 schemas/adr.schema.json, examples/worked-architecture-design.md]
+    worked_example_seed: design a small multi-user notes service with two ADRs and a review pass
+
+  - name: code-review
+    domain: software-development-and-architecture
+    purpose: >
+      Review code changes rigorously and kindly — correctness, security,
+      readability — with feedback that lands and improves the next change.
+    when_to_use: [reviewing a diff or pull request, auditing a module for risk,
+                  giving feedback to a teammate, self-reviewing before merge]
+    when_not: [designing the system (use software-architecture-design),
+               writing the tests (use testing-strategy)]
+    references:
+      - review-principles.md           # methodology: review for the author, the reader, the future
+      - review-checklist.md            # checklist: correctness, edge cases, error handling, contracts
+      - security-review-basics.md      # checklist: injection, authz, secrets, dependency risk
+      - performance-review-basics.md   # checklist: hot paths, allocations, N+1 patterns, measurement first
+      - readability-and-style.md       # rubric: naming, function shape, comment discipline
+      - giving-and-receiving-feedback.md # methodology: comment phrasing, severity labels, disagreement
+      - review-automation.md           # methodology: what to automate, what stays human, CI gates
+      - review-case-studies.md         # case study: three real-shaped diffs with annotated reviews
+    supporting: [templates/review-report-template.md, examples/worked-code-review.md]
+    worked_example_seed: review a 120-line diff that hides a security flaw and a logic bug
+
+  - name: testing-strategy
+    domain: software-development-and-architecture
+    purpose: >
+      Design test suites that earn their keep — what to test, at which level,
+      with which techniques — and how to keep them fast and honest.
+    when_to_use: [planning tests for a new system, rescuing a flaky suite,
+                  deciding coverage strategy, designing CI test stages]
+    when_not: [reviewing code itself (use code-review), architecture choices (use software-architecture-design)]
+    references:
+      - testing-pyramid.md             # methodology: unit/integration/e2e economics, anti-patterns
+      - test-design-techniques.md      # methodology: equivalence classes, boundaries, state transitions
+      - unit-testing-patterns.md       # pattern catalog: arrange-act-assert, doubles, seams
+      - integration-testing-patterns.md # pattern catalog: contract tests, testcontainers, fakes vs real
+      - property-and-fuzz-testing.md   # methodology: properties, generators, shrinking, when it pays
+      - test-data-management.md        # methodology: fixtures, factories, hermetic data
+      - ci-test-pipelines.md           # methodology: stage design, flake quarantine, signal quality
+      - testing-case-studies.md        # case study: a suite rescue from 40% flake to trustworthy
+    supporting: [templates/test-plan-template.md, examples/worked-test-strategy.md]
+    worked_example_seed: design the test plan for a payment-checkout module with zero existing tests
+
+  # ── Domain: creative work (2) ────────────────────────────────────────────
+  - name: story-and-narrative-design
+    domain: creative-work
+    purpose: >
+      Develop stories from premise to revision — structure, character, world,
+      dialogue — for fiction, games, and narrative projects.
+    when_to_use: [outlining a story, developing characters or world, fixing a broken draft,
+                  designing narrative for a game or experience]
+    when_not: [general brainstorming (use brainstorming-and-ideation), marketing copy (use copywriting-and-messaging)]
+    references:
+      - story-structure-models.md      # methodology: three-act, hero's journey, kishōtenketsu, when each fits
+      - character-design.md            # methodology: desire, wound, contradiction, arc types
+      - worldbuilding-methods.md       # methodology: top-down vs bottom-up, iceberg rule, consistency
+      - dialogue-craft.md              # checklist: subtext, voice differentiation, exposition control
+      - theme-and-motif.md             # methodology: thematic argument, motif systems, restraint
+      - narrative-outlining.md         # methodology: scene cards, beat sheets, discovery-vs-planning
+      - revision-and-editing.md        # methodology: revision passes order, cutting, beta feedback triage
+      - story-case-studies.md          # case study: one short story taken from premise to final draft
+    supporting: [templates/story-outline-template.md, templates/character-sheet-template.md,
+                 examples/worked-story-design.md]
+    worked_example_seed: develop a 3,000-word short story from one-line premise through revision plan
+
+  - name: brainstorming-and-ideation
+    domain: creative-work
+    purpose: >
+      Run ideation that actually produces usable ideas — structured divergence,
+      disciplined convergence, and honest evaluation.
+    when_to_use: [generating options for any creative problem, un-stucking a project,
+                  running an ideation session solo or with a team, triaging a backlog of ideas]
+    when_not: [executing a chosen idea (route to the domain skill), evaluating finished work (use critic profile)]
+    references:
+      - ideation-principles.md         # methodology: quantity breeds quality, deferral of judgment, limits
+      - divergence-techniques.md       # pattern catalog: SCAMPER, forced analogy, worst-idea, constraint flips
+      - convergence-techniques.md      # methodology: clustering, dot-voting, weighted criteria
+      - constraint-based-creativity.md # methodology: how constraints generate novelty, designing them
+      - idea-evaluation-rubrics.md     # rubric: novelty/feasibility/fit scoring, anti-pattern flags
+      - facilitation-guide.md          # methodology: session design, energy management, remote formats
+      - ideation-capture-and-triage.md # checklist: capture formats, parking lots, decision records
+      - ideation-case-studies.md       # case study: one solo and one team session, start to shortlist
+    supporting: [templates/ideation-session-template.md, examples/worked-ideation-session.md]
+    worked_example_seed: run a 45-minute solo ideation for a podcast concept, 30 ideas to a shortlist of 3
+
+  # ── Domain: marketing (2) ───────────────────────────────────────────────
+  - name: marketing-strategy
+    domain: marketing
+    purpose: >
+      Build marketing strategy from audience and positioning through channels
+      and campaigns to measurement.
+    when_to_use: [positioning a product, planning a launch, choosing channels,
+                  building a campaign, diagnosing why marketing is not landing]
+    when_not: [writing the actual copy (use copywriting-and-messaging),
+               business model questions (use business-planning)]
+    references:
+      - marketing-fundamentals.md      # methodology: STP, the 4Ps reframed for small teams
+      - positioning-and-differentiation.md # methodology: positioning statements, category design basics
+      - audience-research.md           # methodology: interviews, jobs-to-be-done, segment sizing
+      - messaging-frameworks.md        # pattern catalog: value props, message hierarchies, proof points
+      - channel-strategy.md            # methodology: channel fit, owned/earned/paid, sequencing
+      - campaign-planning.md           # methodology: objectives, flights, budgets, briefs
+      - marketing-metrics.md           # metrics guide: funnel metrics, attribution humility, dashboards
+      - strategy-case-studies.md       # case study: a solo-founder SaaS launch, strategy to results
+    supporting: [templates/marketing-strategy-template.md, templates/campaign-brief-template.md,
+                 examples/worked-marketing-strategy.md]
+    worked_example_seed: build the launch strategy for a $15 indie productivity app
+
+  - name: copywriting-and-messaging
+    domain: marketing
+    purpose: >
+      Write and edit marketing copy that is clear, voiced, and honest —
+      headlines, landing pages, emails, and product messaging.
+    when_to_use: [writing headlines or hooks, drafting landing pages or emails,
+                  tightening existing copy, building a voice guide]
+    when_not: [strategy and channel choices (use marketing-strategy),
+               social calendar ops (use content-calendar-planning)]
+    references:
+      - copywriting-principles.md      # methodology: clarity over cleverness, benefits over features, one reader
+      - voice-and-tone.md              # methodology: voice attributes, tone modulation, style rules
+      - headline-and-hook-craft.md     # pattern catalog: 12 headline forms with honest-use notes
+      - long-form-vs-short-form.md     # methodology: when each wins, structure for both
+      - conversion-copywriting.md      # methodology: CTAs, objection handling, ethical urgency
+      - editing-and-tightening.md      # checklist: the 20% cut, weasel-word hunt, rhythm passes
+      - a-b-testing-copy.md            # methodology: hypothesis-driven tests, sample discipline
+      - copy-case-studies.md           # case study: a landing page rewrite with before/after metrics
+    supporting: [templates/messaging-brief-template.md, examples/worked-copy-pass.md]
+    worked_example_seed: rewrite a weak landing page for a meal-planning app, section by section
+
+  # ── Domain: business management (2) ──────────────────────────────────────
+  - name: business-planning
+    domain: business-management
+    purpose: >
+      Plan a business or product line — model, market, finances, risks — at a
+      depth a solo founder or small team can execute.
+    when_to_use: [testing a business idea, writing a plan or one-pager,
+                  building a financial sketch, preparing to talk to partners or lenders]
+    when_not: [marketing execution (use marketing-strategy), legal/tax advice (consult a professional)]
+    references:
+      - business-model-design.md       # methodology: business model canvas, value capture, unit logic
+      - market-analysis.md             # methodology: TAM honesty, competitor mapping, wedge selection
+      - financial-planning-basics.md   # methodology: cost structure, pricing, break-even, runway math
+      - goal-setting-and-metrics.md    # methodology: North Star plus input metrics, quarterly cadence
+      - risk-assessment.md             # checklist: kill-risk identification, pre-mortems, mitigation
+      - lean-planning-methods.md       # methodology: one-page plans, assumption testing, pivots
+      - stakeholder-communication.md   # methodology: updates, asks, expectation management
+      - planning-case-studies.md       # case study: a service business and a product business planned
+    supporting: [templates/business-plan-template.md, templates/one-page-plan-template.md,
+                 examples/worked-business-plan.md]
+    worked_example_seed: build a one-page plan plus 12-month financial sketch for a freelance studio
+
+  - name: operations-and-process-design
+    domain: business-management
+    purpose: >
+      Design the processes a small operation runs on — mapped, documented,
+      measured, and improved without bureaucracy.
+    when_to_use: [a recurring task keeps going wrong, onboarding help, scaling a service,
+                  documenting how work gets done, reducing key-person risk]
+    when_not: [strategy and planning (use business-planning), software architecture (use software-architecture-design)]
+    references:
+      - process-mapping.md             # methodology: swimlanes, handoffs, finding the real process
+      - workflow-design.md             # methodology: states, queues, batching, bottleneck theory basics
+      - sop-authoring.md               # template guide: SOPs people actually follow, test-by-newcomer
+      - capacity-planning.md           # methodology: demand vs capacity, buffers, saying no
+      - quality-management-basics.md   # methodology: definitions of done, inspection points, escapes
+      - continuous-improvement.md      # methodology: retrospectives, kaizen, change one thing
+      - tooling-and-automation.md      # checklist: when to automate, build vs buy, automation risk
+      - operations-case-studies.md     # case study: a two-person agency's delivery pipeline redesigned
+    supporting: [templates/sop-template.md, templates/process-map-template.md,
+                 examples/worked-process-design.md]
+    worked_example_seed: map and redesign a client-onboarding process that keeps dropping steps
+
+  # ── Domain: social media management (2) ─────────────────────────────────
+  - name: social-media-strategy
+    domain: social-media-management
+    purpose: >
+      Build a social presence with intent — platform choice, content pillars,
+      community, and growth that does not depend on gimmicks.
+    when_to_use: [starting or rebooting a social presence, choosing platforms,
+                  defining content pillars, responding to a growth plateau]
+    when_not: [scheduling the calendar (use content-calendar-planning), writing ad copy (use copywriting-and-messaging)]
+    references:
+      - platform-landscape.md          # reference: major platforms, audiences, formats, effort economics
+      - audience-and-community.md      # methodology: who you serve, community vs audience, listening
+      - content-pillars.md             # methodology: pillar design, ratio planning, series thinking
+      - engagement-strategy.md         # methodology: reply craft, conversation design, boundaries
+      - growth-and-reach.md            # methodology: organic mechanics, collaboration, honest growth
+      - social-listening.md            # methodology: monitoring, sentiment, feedback into product
+      - crisis-management.md           # playbook: response triage, apology anatomy, when to go quiet
+      - strategy-case-studies.md       # case study: an indie maker's 12-month presence build
+    supporting: [templates/social-strategy-template.md, examples/worked-social-strategy.md]
+    worked_example_seed: build a two-platform strategy for an indie game developer pre-launch
+
+  - name: content-calendar-planning
+    domain: social-media-management
+    purpose: >
+      Turn a social strategy into an executable calendar — cadence, mix,
+      repurposing, and a review loop that survives busy weeks.
+    when_to_use: [planning a month of content, building a repurposing system,
+                  fixing inconsistent posting, preparing around launches or events]
+    when_not: [choosing platforms/pillars (use social-media-strategy), writing final copy (use copywriting-and-messaging)]
+    references:
+      - calendar-fundamentals.md       # methodology: horizons, slots vs ideas, sustainable cadence math
+      - cadence-and-frequency.md       # methodology: platform norms, quality floors, recovery weeks
+      - content-mix-design.md          # methodology: pillar ratios, format rotation, series slots
+      - seasonal-and-event-planning.md # checklist: launch arcs, holidays, lead times
+      - repurposing-frameworks.md      # methodology: pillar-to-atom model, one asset many cuts
+      - scheduling-workflows.md        # methodology: batching, tools-agnostic pipelines, approvals
+      - performance-review-loop.md     # methodology: weekly review, keep/kill/iterate, feeding back
+      - calendar-case-studies.md       # case study: a solo creator's month built and reviewed
+    supporting: [templates/content-calendar-template.md, examples/worked-content-calendar.md]
+    worked_example_seed: build a 4-week calendar for a newsletter-plus-two-platforms creator
+
+  # ── Domain: UI design (2) ────────────────────────────────────────────────
+  - name: ui-design-critique
+    domain: ui-design
+    purpose: >
+      Critique interfaces with a structured eye — hierarchy, layout, type,
+      color, interaction, accessibility — producing actionable findings.
+    when_to_use: [reviewing a screen or flow, getting unstuck on why a UI feels off,
+                  preparing a design for handoff, auditing accessibility]
+    when_not: [building a design system (use design-system-foundations),
+               game level layout (use level-and-encounter-design)]
+    references:
+      - critique-principles.md         # methodology: goals before taste, severity labels, kind phrasing
+      - visual-hierarchy.md            # methodology: attention order, emphasis budget, scanning patterns
+      - layout-and-spacing.md          # methodology: grids, spacing systems, density, alignment
+      - typography-basics.md           # rubric: scale, measure, leading, font pairing, legibility
+      - color-and-contrast.md          # rubric: palette roles, contrast ratios, semantic color
+      - interaction-patterns.md        # pattern catalog: forms, navigation, feedback, empty states
+      - accessibility-review.md        # checklist: WCAG essentials, keyboard, screen reader basics
+      - critique-case-studies.md       # case study: three screens critiqued with before/after
+    supporting: [templates/critique-report-template.md, examples/worked-ui-critique.md]
+    worked_example_seed: critique a mobile checkout flow with 12 prioritized findings
+
+  - name: design-system-foundations
+    domain: ui-design
+    purpose: >
+      Found a design system — tokens, components, documentation, theming, and
+      governance — at a scope a small team can actually maintain.
+    when_to_use: [starting a design system, consolidating scattered UI decisions,
+                  introducing tokens, documenting components, planning theming]
+    when_not: [one-off screen feedback (use ui-design-critique),
+               brand strategy (out of scope for this roster — say so)]
+    references:
+      - design-tokens.md               # methodology: token tiers, naming, scales, theming hooks
+      - component-inventory.md         # methodology: auditing existing UI, grouping, prioritizing
+      - pattern-documentation.md       # template guide: component docs people use — anatomy, do/don't
+      - theming-architecture.md        # methodology: theme slots, dark mode, brand variants
+      - accessibility-standards.md     # checklist: component-level a11y requirements and tests
+      - versioning-and-governance.md   # methodology: change process, deprecation, contribution rules
+      - adoption-strategies.md         # methodology: pilot surfaces, migration order, measuring usage
+      - system-case-studies.md         # case study: a three-person team's system over six months
+    supporting: [templates/token-spec-template.md, templates/component-doc-template.md,
+                 schemas/design-tokens.schema.json, examples/worked-design-system.md]
+    worked_example_seed: found a token set plus five documented components for a small web app

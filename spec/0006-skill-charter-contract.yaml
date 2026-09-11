@@ -1,0 +1,112 @@
+# 0006-skill-charter-contract.yaml
+# Contract class: template. Every skill in skills/ MUST follow this contract.
+# A skill is a self-contained expertise package: a 512-substantive-line SKILL.md
+# charter plus exactly 8 reference files plus supporting artifacts it genuinely uses.
+artifact:
+  id: spec-0006-skill-charter-contract
+  schema_version: agentic-os.spec.v1
+  status: ratified
+
+directory_contract:
+  layout: |
+    skills/<skill-name>/
+      SKILL.md
+      references/           # exactly 8 files, per 0005
+      templates/            # only if listed in 0005 for this skill
+      schemas/              # only if listed in 0005 for this skill
+      examples/             # only if listed in 0005 for this skill
+  rules:
+    - references/ holds exactly 8 files — no more, no fewer
+    - templates/, schemas/, examples/ exist only when 0005 lists them; empty scaffolding is a defect
+    - every file in the skill directory is referenced by name at its point of use in SKILL.md
+    - every file referenced in SKILL.md exists; the check is mechanical (see 0010)
+
+skill_md:
+  length:
+    substantive_lines: 512
+    counting_rule: >
+      Substantive lines = physical lines minus blank lines and minus the YAML
+      frontmatter delimiter lines. Target exactly 512; accept 504-520. Padding
+      (repeated boilerplate, filler paragraphs, redundant restatement) is a
+      defect even if the count passes. Depth comes from worked examples, edge
+      cases, checklists, and recovery guidance.
+  frontmatter:
+    required_fields:
+      name: skill name (lowercase-hyphenated, matches directory)
+      description: >
+        Two to four sentences written for a router: lead with WHEN to load this
+        skill (trigger situations), then what it produces. Must be loadable
+        cold — no reliance on having read any other document.
+  sections:
+    - id: "01"
+      title: Purpose
+      line_budget: [24, 40]
+      content: what this skill helps the user accomplish; the 2-3 outcomes it owns
+    - id: "02"
+      title: When to Use / When Not to Use
+      line_budget: [32, 56]
+      content: >
+        At least 5 use triggers and 3 non-triggers, each concrete. Non-triggers
+        name the better alternative (another skill in this repo when one fits,
+        or a plain statement that no skill is needed).
+    - id: "03"
+      title: Inputs and Outputs
+      line_budget: [32, 56]
+      content: >
+        What the user must supply (briefs, constraints, materials); what the
+        skill hands back (documents, plans, checklists) with shape descriptions.
+        Reference templates/ files by name here when they define an output shape.
+    - id: "04"
+      title: Workflow
+      line_budget: [96, 160]
+      content: >
+        The numbered end-to-end procedure (8-16 steps). Each step: action, the
+        reference file that governs it (by name), the checkpoint question the
+        user should be asked. This section is the operational heart — write it
+        so a competent practitioner could execute it without any other document.
+    - id: "05"
+      title: Rules and Quality Bar
+      line_budget: [48, 80]
+      content: >
+        8-16 numbered rules that distinguish professional output from generic
+        output in this domain, each with a one-line why. Include the relevant
+        rubric or checklist from references/ by name.
+    - id: "06"
+      title: Worked Example
+      line_budget: [96, 160]
+      content: >
+        One complete, realistic run of the workflow on a specific scenario
+        (named product, game, business, or campaign — no placeholders). Show
+        intermediate artifacts, not just the final one. Reference examples/
+        files by name when they carry extended artifacts.
+    - id: "07"
+      title: Failure Modes and Recovery
+      line_budget: [48, 80]
+      content: >
+        5-8 ways this kind of work goes wrong, each with: early signal,
+        corrective move, and prevention. Written from real practice.
+    - id: "08"
+      title: Supporting Files Index
+      line_budget: [24, 40]
+      content: >
+        A table of every file in the skill directory: path, one-line purpose,
+        and the section(s) that use it. This table must match the directory
+        exactly — the verification suite diffs it against reality.
+
+reference_files_contract:
+  count: 8
+  naming: lowercase-hyphenated .md (schemas may be .json)
+  length_guidance: 40-200 substantive lines each; a reference is a real document, not a stub
+  content_rule: >
+    Written from general professional knowledge of the domain. Useful to a
+    practitioner who has never seen this repository. No content may derive
+    from any private source system (see 0008).
+  role_variety: >
+    Across the 8 files, cover at least 4 of these roles: methodology,
+    checklist, rubric, pattern catalog, case study, glossary, template guide,
+    metrics/measurement guide.
+
+tone_and_audience:
+  reader: a competent practitioner new to this repo, using any agent harness
+  voice: direct, operational, concrete; teach the craft, do not gesture at it
+  forbidden: [placeholder text, TODO markers, "as an AI language model", references to private systems]

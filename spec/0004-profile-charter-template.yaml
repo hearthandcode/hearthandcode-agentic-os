@@ -1,0 +1,99 @@
+# 0004-profile-charter-template.yaml
+# Contract class: template. Every PROFILE.md in profiles/ MUST follow this
+# anatomy. Sections may be deepened but never removed, renamed, or reordered.
+# This template is the seam between the fleet design (0003) and implementation.
+artifact:
+  id: spec-0004-profile-charter-template
+  schema_version: agentic-os.spec.v1
+  status: ratified
+
+frontmatter:
+  required_fields:
+    name: profile name (lowercase, matches directory name)
+    layer: layer id + name from 0002 (e.g., "L1 orientation")
+    version: semver, starts at 1.0.0
+    description: >
+      One to two sentences written so a router (human or machine) knows when to
+      load this profile. Lead with the trigger situation, not the role title.
+  optional_fields: [tags, related_profiles]
+
+sections:
+  - id: "01"
+    title: Recognition
+    line_budget: [24, 48]
+    required_content:
+      - the trigger situations (from 0003 recognition), phrased as user-language questions
+      - when NOT to use this profile, with the correct alternative profile named
+      - the transformation in one line (input -> output, from 0003)
+    rule: a stranger must know within 30 seconds whether this profile fits their task
+
+  - id: "02"
+    title: Role and Operating Principles
+    line_budget: [40, 80]
+    required_content:
+      - the role in plain prose (what it owns, what it never does — from 0002 owns/does_not_own)
+      - the five shared fleet principles (0003 shared_principles) restated in this profile's voice
+      - the consent-and-effects principle with a concrete example specific to this layer
+      - the hub-scope confinement principle with a concrete example specific to this layer
+    rule: principles are operational (what the profile DOES), not aspirational adjectives
+
+  - id: "03"
+    title: Input Contract
+    line_budget: [32, 64]
+    required_content:
+      - the 3-5 kinds of input this profile accepts (from 0002 primary_inputs), each with a one-line example
+      - what a well-formed input looks like (a minimal template the user can copy)
+      - what the profile does with a malformed or out-of-scope input (pause-and-ask, never guess silently)
+    rule: every input kind names what the profile will hand back for it
+
+  - id: "04"
+    title: Output Contract
+    line_budget: [32, 64]
+    required_content:
+      - the 3-5 kinds of output this profile produces (from 0002 primary_outputs), each with shape description
+      - a literal output template per kind (markdown skeleton the profile fills in)
+      - the claim-label rule: every factual claim carries source / evidence / guess / unknown
+    rule: output templates are literal enough that a user can recognize a conforming response
+
+  - id: "05"
+    title: Workflow
+    line_budget: [48, 96]
+    required_content:
+      - the numbered operating loop for the profile's main transformation (5-9 steps)
+      - per-step: what the profile checks, produces, and asks
+      - where the loop pauses for the user (explicit pause points)
+      - where the loop hands off to another profile (from 0002 seams), and in what form
+    rule: handoffs name the receiving profile and the exact artifact passed
+
+  - id: "06"
+    title: Worked Miniature
+    line_budget: [48, 96]
+    required_content:
+      - the worked miniature from 0003, written out end-to-end as a sample session
+      - user message -> profile response(s), showing templates from sections 03-05 in use
+      - at least one pause point and one claim label demonstrated
+    rule: the miniature is realistic and specific; no lorem-ipsum, no toy "foo/bar" content
+
+  - id: "07"
+    title: Boundaries and Failure Modes
+    line_budget: [40, 80]
+    required_content:
+      - the boundary cases from 0003, each resolved explicitly
+      - 3-5 additional failure modes: what goes wrong, how the profile detects it, what it does instead
+      - the escalation rule: when this profile is the wrong tool, it says so and names the right one
+    rule: every failure mode ends in a user-visible behavior, never silent degradation
+
+  - id: "08"
+    title: Customization
+    line_budget: [16, 32]
+    required_content:
+      - what a user may safely edit in this charter (voice examples, templates)
+      - what they should not edit without understanding the whole fleet (layer binding, principles)
+      - a pointer to docs/03-profiles.md for the layer model
+    rule: customization guidance assumes a non-expert reader
+
+cross_charter_rules:
+  - no profile may reference any private source system, code name, or internal term (see 0008)
+  - no profile may claim capabilities the harness does not provide (no daemons, no network, no background work)
+  - cross-references between profiles use only the 8 public profile names from 0003
+  - every PROFILE.md must be understandable standalone; shared context lives in docs/ and is named, not assumed

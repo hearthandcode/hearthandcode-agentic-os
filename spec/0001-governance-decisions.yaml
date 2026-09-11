@@ -1,0 +1,66 @@
+# 0001-governance-decisions.yaml
+# Contract class: governance record for the hearthandcode-agentic-os open-source starter.
+# Status: authoritative for all implementation work in this repository.
+artifact:
+  id: spec-0001-governance-decisions
+  schema_version: agentic-os.spec.v1
+  status: ratified
+  review_status: approved
+  ratified_at_utc: "2026-09-11T16:30:00Z"
+  ratified_by: project-owner (gate G-01, "approve-as-is")
+  supersedes: null
+
+project:
+  name: hearthandcode-agentic-os
+  kind: open-source starter system ("agentic operating system" for personal AI work)
+  repository_path: ~/devel/hearthandcode/open-source/packages/hearthandcode-agentic-os
+  scope_posture: >
+    A deliberate ~25% projection of a larger private operating system. It preserves
+    the SHAPE of the ideas (layered profiles, chartered skills, consent-first
+    operation, declared work scope) and discloses none of the private substance.
+    It is a starter system: useful, coherent, complete as a starter, and never a
+    faithful map of any source system.
+  audience: >
+    Practitioners and hobbyists who want a structured multi-profile agent setup
+    in the Hermes Agent or Pi agent harnesses without designing one from scratch.
+
+license:
+  decision: MIT
+  rationale: >
+    Permissive, maximally adoptable, and the community default for prompt-,
+    configuration-, and skill-based starter systems. The Apache-2.0 patent grant
+    adds nothing for non-code charter content; the installer's small Python
+    footprint does not justify it either.
+  file: LICENSE (written by the implementer during scaffold; standard MIT text)
+
+authority:
+  local_git: allowed        # git init, add, commit inside this repository
+  remotes: prohibited       # no remote creation, no push, no publication without
+                            # a separate explicit owner release naming effect + target
+  network_in_product: prohibited   # shipped artifacts make no network calls
+  telemetry_in_product: prohibited
+  secrets_in_product: prohibited   # no tokens, keys, emails, hostnames, home paths
+  source_system_access: read-only-and-closed  # implementation needs no further
+                            # access to any private source; spec/ is self-contained
+
+gate_record:
+  gate: G-01
+  decision: approved-as-is
+  artifacts_approved:
+    - 8-layer model with 8 bound profiles (see 0002, 0003)
+    - 16-skill roster across 7 domains (see 0005)
+    - TUI installer flow sketch (see 0007)
+    - Abstraction map and exclusion list (see 0008)
+
+spec_index:
+  - { id: spec-0001, file: spec/0001-governance-decisions.yaml,  topic: governance, license, authority }
+  - { id: spec-0002, file: spec/0002-layer-model.yaml,           topic: the 8 layers and their seams }
+  - { id: spec-0003, file: spec/0003-profile-fleet.yaml,         topic: the 8 profiles, roles, charter seeds }
+  - { id: spec-0004, file: spec/0004-profile-charter-template.yaml, topic: mandatory profile charter anatomy }
+  - { id: spec-0005, file: spec/0005-skill-roster.yaml,          topic: 16 skills with full reference manifests }
+  - { id: spec-0006, file: spec/0006-skill-charter-contract.yaml, topic: SKILL.md anatomy and 512-line rule }
+  - { id: spec-0007, file: spec/0007-installer-contract.yaml,    topic: TUI installer behavior and seams }
+  - { id: spec-0008, file: spec/0008-abstraction-and-safety.yaml, topic: abstraction map, exclusions, leak policy }
+  - { id: spec-0009, file: spec/0009-repository-layout.yaml,     topic: canonical directory tree and naming }
+  - { id: spec-0010, file: spec/0010-verification-contract.yaml, topic: checks, test matrix, definition of done }
+  - { id: spec-0011, file: spec/0011-implementation-handoff.md,  topic: implementer session prompt }

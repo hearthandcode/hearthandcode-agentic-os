@@ -1,0 +1,63 @@
+# 0008-abstraction-and-safety.yaml
+# Contract class: safety. This repository is a deliberate ~25% public projection
+# of a private operating system. This contract defines what was abstracted, what
+# was excluded, and the mechanical leak-prevention rules every artifact obeys.
+artifact:
+  id: spec-0008-abstraction-and-safety
+  schema_version: agentic-os.spec.v1
+  status: ratified
+
+projection_principle: >
+  Preserve the shape of the ideas; disclose none of the private substance.
+  Transform twice: concept -> user capability -> generic mechanism.
+  Never concept -> renamed mechanism. When unsure whether something leaks,
+  exclude it; exclusion is always safe.
+
+abstraction_map:  # internal concept -> public projection (ratified at G-01)
+  - {internal: fixed 16x16 taxonomy of governed rooms, public: one user-declared hub scope root; no fixed taxonomy}
+  - {internal: one-line effect releases with rollback law, public: plain consent-and-effects principle — agent names what it will change and asks first}
+  - {internal: bounded audit receipts with digests, public: a simple run log per task (markdown, append-only)}
+  - {internal: closed 8-term claim vocabulary, public: 4 claim labels — source, evidence, guess, unknown}
+  - {internal: 32-profile typed fleet with I/O envelopes, public: 8 generic profiles with prose contracts, one per layer}
+  - {internal: lens vocabulary plus bounded review workroom, public: a review checklist pattern inside the critic profile}
+  - {internal: fail-closed hold semantics, public: pause-and-ask as the stated default}
+  - {internal: large governed skill library, public: 16 self-contained 512-line skills}
+
+exclusions:  # consciously NOT projected; do not reintroduce
+  - task-board orchestration machinery (kanban-style dispatch, workers, tickets)
+  - multi-provider routing, model councils, or any provider integration
+  - harness plugin/extension development machinery
+  - receipt/digest governance YAML machinery (reduced to plain-language principles)
+  - any specification, notation system, or grammar research from the private system
+  - session-ritual automation (the continuity profile describes handoffs in prose only)
+
+forbidden_content:
+  policy: >
+    No artifact in this repository may contain internal code names, project
+    names, profile names, room or wing names, specification acronyms, file
+    paths, hostnames, usernames, email addresses, or personal identifiers from
+    any private source system. Content is written from general professional
+    knowledge, never paraphrased from private material.
+  enforcement: >
+    scripts/scan_leaks.py scans every tracked file (case-insensitive) for a
+    maintainer-held forbidden-token list plus generic patterns (home-directory
+    paths, email addresses, IP addresses). The repo ships the scanner with a
+    placeholder example token list only; the real list is maintainer-held and
+    never committed.
+  scan_contract:
+    patterns_always_active:
+      - "/home/[a-z]+"          # home-directory path fragments
+      - "[a-z0-9._%+-]+@[a-z0-9.-]+"   # email addresses
+      - "\\b\\d{1,3}(\\.\\d{1,3}){3}\\b"  # IP addresses
+      - "BEGIN [A-Z ]*PRIVATE KEY"     # key material
+    token_list_file: .leak-scan-tokens.txt (gitignored; ships as .leak-scan-tokens.example.txt)
+    exit_behavior: any match -> non-zero exit, file:line:match printed; blocks verification (0010)
+
+originality_rules:
+  - skill and profile content teaches general professional craft; if a passage could only have been written by reading the private system, it is a leak — rewrite from public knowledge or cut it
+  - names (layers, profiles, skills) must pass two tests: a stranger learns the function from the name; an insider cannot reverse-engineer private structure from it
+  - no passage may be paraphrased from private source text; structure similarity to any private document is a defect
+
+audit_trail:
+  - this file is the public record of the abstraction posture; keep it honest as the repo evolves
+  - deviations discovered later are recorded here with date and resolution
