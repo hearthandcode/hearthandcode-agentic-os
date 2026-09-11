@@ -39,6 +39,11 @@ control. Every inequality is the result of a design decision, not a market
 force. With sufficient modeling and discipline, the worst failure modes can be
 prevented before they reach players.
 
+Economies must be designed for multiple player segments simultaneously — the
+casual player earning 1h/day and the hardcore player earning 5h/day must both
+feel that their time is rewarded, their progression is visible, and their
+purchases have meaning. One-size-fits-all tuning serves neither segment.
+
 The skill also recognizes that economies are never finished. Live tuning,
 seasonal drift, content expansion, and player behavior evolution all mean the
 model is a living document. The sixteen-step workflow is designed to be
@@ -80,9 +85,9 @@ repeated in full or in part whenever conditions change. The monitoring layer
    there is data from day one and no guessing about what normal looks like.
 
 7. **The game has a player-driven economy or market.** Player-to-player trades
-   create supply-and-demand outside designer control, making monitoring even
-   more critical. The case studies in `references/economy-case-studies.md` show
-   how player-driven economies fail.
+   create supply-and-demand curves outside designer control, making monitoring
+   essential. The case studies in references/economy-case-studies.md show how
+   player-driven economies fail and what design patterns prevent collapse.
 
 ### When NOT to Use This Skill
 
@@ -92,9 +97,14 @@ repeated in full or in part whenever conditions change. The monitoring layer
 
 - **Narrative-only economy with no mechanical effect.** If resource choices
   impact story but not player power, access, or speed, use a simple comparison
-  table within the narrative design skill, not this full toolchain.
+  via the narrative design skill, not this full toolchain.
 
-- **Existing balanced game with zero new content.** The ship is stable. This
+- **Preschool or children's game with no monetization.** Games designed for
+    very young players rarely benefit from multi-currency economies. A simple
+    resource collection model with no sink pressure is more appropriate. No
+  skill in this repository directly covers children's game design.
+
+  - **Existing balanced game with zero new content.** The ship is stable. This
   skill is for change, not for documentation. Opening a full modeling cycle
   on a healthy economy adds process without value.
 
@@ -124,7 +134,7 @@ repeated in full or in part whenever conditions change. The monitoring layer
 - **Player persona set.** At least three archetypes — Casual (1h/day), Midcore
   (2.5h/day), Hardcore (5h/day). Add a Whale persona when monetization relies
   on high-dollar purchases. Each needs a time budget, play style, and spending
-  tolerance.
+  tolerance. At minimum, define three personas before beginning the model.
 
 - **Target endgame time.** The number of hours to reach endgame for the median
   persona anchors all cost curves.
@@ -198,10 +208,11 @@ Read `references/economy-modeling.md` — the static modeling section describes
 column layout, formula relationships, and validation patterns. Output a working
 model (spreadsheet or script) with columns per currency per persona: starting
 supply, daily faucet events, daily sink events, net flow, running balance.
-Cover at least 28 days.
+Cover at least 28 days. Use explicit named ranges or variable declarations so
+every cell's derivation is traceable.
 
 **Check:** Is the model fully deterministic? Changing any single input must
-recalculate the entire 28-day projection.
+recalculate the entire 28-day projection without manual intervention.
 
 ### Step 5: Define Persona Segments
 
@@ -229,7 +240,7 @@ Wider divergence means the personas are playing different games.
 Formula: sink_ratio = total_sinks_consumed / total_faucets_generated, per
 currency, over 28 days. Target: 0.85-1.10 for the median persona. Below 0.85
 means inflation; above 1.10 means deflation. Compute per currency individually,
-never aggregate.
+never aggregate across currencies — a strong currency can mask a failing one.
 
 **Check:** Are all currencies in 0.85-1.10 for at least three of the defined
 personas at day 28?
@@ -480,6 +491,44 @@ AC sink ratio: Casual 0.82 (borderline), Midcore 0.93 (pass), Hardcore 0.88
 of FT in the first two weeks and introducing a third FT seasonal sink if FT
 balance exceeds 500 FT for the average midcore player at day 60.
 
+**Key insight from the example:** The iterative cycle (diagnose → tune →
+re-check) turned a failing FT economy into a passing one without changing the
+core loop — by adding three new sinks and adjusting two faucets. No single
+change exceeded 10%. The model survived contact with Monte Carlo and passed
+all ethics checks before a single line of code was written.
+
+**Common economy archetypes for reference** — Forge & Anvil is a dual-parallel
+system, but the workflow applies to any archetype:
+
+| Archetype | Description | Best for |
+|-----------|-------------|----------|
+| Single linear | One currency earned through play, spent on gates | Casual mobile, premium one-time |
+| Dual parallel | Hard premium + soft earned with conversion gates | F2P mobile, GaaS |
+| Multi-resource | 3+ resources with complementary roles | RPGs, crafting games, 4X |
+| Token economy | One fungible token with many simultaneous sink types | Social platforms, UGC |
+
+**Implementation estimate:** A first economy model for a medium-complexity
+dual-currency game like Forge & Anvil typically takes 5-10 hours for design
+and documentation, 3-5 hours to build the spreadsheet model, 2-4 hours for
+a Monte Carlo simulation of 10K player-lifecycle runs, 4-8 hours across 3-5
+closed playtune sessions, and 2-3 hours to validate the schema and write the
+dashboard spec. Budget 2-3 calendar weeks. The model lives in version control
+beside the game design doc — never tune from memory.
+
+**Key economy terms used in this example:**
+
+| Term | Definition |
+|------|-----------|
+| Faucet | Any system that generates currency or resources — quests, drops, daily bonuses, selling |
+| Sink | Any system that removes currency or resources — repair, crafting fees, upgrade costs, consumables |
+| Soft currency | Freely earned through play, abundant, routine purchases |
+| Hard currency | Earned slowly or purchased at a premium, scarce |
+| Conversion gate | Rate-limited exchange between currencies at a fixed ratio |
+| Sink ratio | Total sink volume / total faucet volume over a reference period |
+| Inflation | Currency devaluation from more entering than being removed |
+| Wealth chasm | Growing gap between top and bottom player segments |
+| Progression curve | Rate of content unlock as a function of playtime or level |
+
 See `examples/worked-economy-balance.md` for complete tables, balance sheets,
 and the full tuning history.
 
@@ -563,7 +612,23 @@ currency directly.
 and compare against active earnings. If login exceeds 30% of active earnings,
 redesign before the model passes.
 
-### 7. Over-Levered Changes
+### 7. Phantom Premium Offering
+
+**Early signal:** A purchase pack lists a "discount" against an invisible
+base price. Players cannot find the standalone item at its claimed original
+price. This is false anchoring and a regulatory violation in multiple
+jurisdictions.
+
+**Corrective move:** Publish the base price of every premium-eligible item
+as a standalone widget visible from the same screen as the bundle offer. If
+a bundle discount is advertised, both the unbundled total and the bundle
+price must be shown.
+
+**Prevention:** During step 11 (ethics review), test every purchase flow
+by asking: "What does this cost outside this bundle?" If the answer is
+"nothing" or "it doesn't exist standalone," the bundle fails the test.
+
+### 8. Over-Levered Changes
 
 **Early signal:** The team changes multiple economy levers in a single patch
 without isolating each effect. Patch notes have no old and new values.
@@ -580,57 +645,23 @@ If the table has no entries, the changes have not been documented.
 
 | File | Role | Read / Use when |
 |------|------|-----------------|
-| SKILL.md | Master charter — this file | Navigating the skill; starting any economy workflow |
-| references/economy-design-fundamentals.md | Methodology — sink/faucet model, economic phases, metastability | Steps 1, 7-8, 13; understanding core architecture |
-| references/currencies-and-resources.md | Pattern catalog — currency types, resource classification, conversion rules | Steps 2, 10; classifying currencies and designing sinks |
-| references/progression-systems.md | Methodology — curve models, pacing anchors, phase pacing | Steps 3, 9; choosing cost functions and setting milestones |
-| references/monetization-ethics.md | Rubric — dark pattern checklist, premium purity rule, regulatory landscape | Step 11; auditing purchase flows before launch |
-| references/economy-modeling.md | Methodology — spreadsheet modeling, Monte Carlo simulation, metrics | Steps 4, 12; building and stress-testing the model |
-| references/tuning-and-balancing-methods.md | Checklist — lever table, delta method, 10% rule, tuning sequence | Step 13; adjusting parameters when quality gates fail |
-| references/live-economy-monitoring.md | Metrics guide — essential metrics, dashboard architecture, alert thresholds | Step 14; designing live ops monitoring before launch |
-| references/economy-case-studies.md | Case study — healthy (Ember Realm) and collapsed (Void Engine) economies | Step 15; stress-testing design against known failure modes |
-| templates/economy-model-template.md | Template — fill-in markdown skeleton with guidance blocks | Steps 5, 9, 16; structuring the output document |
-| schemas/economy-model.schema.json | Schema — JSON Schema (draft 2020-12) model validator | Step 16; validating the output before distribution |
-| examples/worked-economy-balance.md | Example — complete Forge & Anvil 28-day model with tuning history | Section 06; seeing the full workflow on a real scenario |
-
-### Common economy archetypes and when they fit
-
-| Archetype | Description | Best for | Examples |
-|-----------|-------------|----------|----------|
-| Single linear | One currency, one purpose — earned through play, spent on gates | Casual mobile, premium one-time games | Super Mario Run, Monument Valley |
-| Dual parallel | Hard currency (premium, slow) + soft currency (earned, fast) with conversion gates | F2P mobile, GaaS | Clash Royale, Brawl Stars |
-| Multi-resource | 3+ resources with complementary roles, each sunk at different rates | RPGs, crafting games, 4X | Factorio, Stardew Valley, Satisfactory |
-| Token economy | One fungible token as universal exchange with multiple simultaneous sink types | Social platforms, UGC | Roblox, Second Life |
-
-### Implementation estimate
-
-A first economy model for a medium-complexity dual-currency game takes:
-- **Design + doc:** 5-10 hours
-- **Spreadsheet model:** 3-5 hours to build and sanity-check
-- **Monte Carlo simulation:** 2-4 hours to script 10K player-lifecycle runs
-- **Playtune pass:** 4-8 hours across 3-5 closed sessions
-- **Finalization:** 2-3 hours to validate schema and write dashboard spec
-
-Budget 2-3 calendar weeks. The model lives in version control beside the game design doc; never tune from memory.
-
-### Key economy terms
-
-| Term | Definition |
-|------|-----------|
-| Faucet | Any system that generates currency or resources for the player — quests, drops, daily bonuses, selling |
-| Sink | Any system that removes currency or resources — repair, crafting fees, upgrade costs, consumables |
-| Soft currency | Freely earned through play, abundant, routine purchases |
-| Hard currency | Earned slowly or purchased, scarce, premium items |
-| Conversion gate | Rate-limited exchange between currencies at a fixed ratio |
-| Sink ratio | Total faucet volume / total sink volume over a reference period. 1.0 = metastable equilibrium |
-| Inflation | Currency devaluation as more enters than is removed, making prices feel meaningless |
-| Wealth chasm | Growing gap between top and bottom player segments that devalues effort for new players |
-| Progression curve | Rate of content unlock as a function of playtime or level |
+| SKILL.md | Master charter | Navigating the skill; starting any economy workflow |
+| references/economy-design-fundamentals.md | Methodology — sink/faucet model, phases | Steps 1, 7-8, 13 |
+| references/currencies-and-resources.md | Pattern catalog — currency types, rules | Steps 2, 10 |
+| references/progression-systems.md | Methodology — curve models, pacing | Steps 3, 9 |
+| references/monetization-ethics.md | Rubric — dark patterns, regulations | Step 11 |
+| references/economy-modeling.md | Methodology — spreadsheets, Monte Carlo | Steps 4, 12 |
+| references/tuning-and-balancing-methods.md | Checklist — levers, delta method | Step 13 |
+| references/live-economy-monitoring.md | Metrics guide — dashboards, alerts | Step 14 |
+| references/economy-case-studies.md | Case study — Ember Realm, Void Engine | Step 15 |
+| templates/economy-model-template.md | Template — fill-in markdown skeleton | Steps 5, 9, 16 |
+| schemas/economy-model.schema.json | Schema — JSON validator (draft 2020-12) | Step 16 |
+| examples/worked-economy-balance.md | Example — complete Forge & Anvil model | Section 06 |
 
 ### Reading Paths
 
 **New to economy design:** Start with `references/economy-design-fundamentals.md`,
-then `references/currencies-and-resources.md`. Read the worked example at
+then `references/currencies-and-resources.md`. Read the example at
 `examples/worked-economy-balance.md`. Return to SKILL.md for the workflow.
 
 **Building a model:** Follow steps 1-16 in order. Each step names the reference
@@ -638,45 +669,9 @@ file to read first. Use `templates/economy-model-template.md` as the output
 scaffold.
 
 **Validating an existing model:** Jump to section 05 (Rules and Quality Bar).
-For each rule you suspect is failing, read the associated reference and the
-relevant workflow step.
+For each suspect rule, read the associated reference and the relevant workflow
+step.
 
-**Diagnosing a live economy:** Start with `references/live-economy-monitoring.md`
-to set up metrics. Then `references/economy-case-studies.md` to match symptoms
-to known failure modes. Use section 07 (Failure Modes) for corrective moves.
-
-### Related skills in this repository
-
-| Skill | Relationship |
-|-------|-------------|
-| game-mechanics-design | Economy balancing feeds mechanic specs with cost data; mechanics create the faucets and sinks the economy tunes |
-| level-and-encounter-design | Level pacing determines how fast players accumulate resources — coordinate progression curves across both |
-| business-planning | Monetization strategy lives here; the business plan references the economy model's pricing assumptions |
-### Tuning sequence quick-reference
-
-When a specific rule fails in testing, apply fixes in this order:
-1. Adjust sink depth (how much currency a single sink removes)
-2. Adjust faucet rate (how fast currency enters)
-3. Adjust conversion rate (soft-to-hard exchange ratios)
-4. Add or remove a sink (structural change — highest impact, highest risk)
-5. Adjust progression curve (shift when each sink becomes available)
-
-Change one variable between playtests. Mark the baseline, change one lever, run three tests, compare.
-
-### Reading Paths
-
-**New to economy design:** Start with `references/economy-design-fundamentals.md`,
-then `references/currencies-and-resources.md`. Read the worked example at
-`examples/worked-economy-balance.md`. Return to SKILL.md for the workflow.
-
-**Building a model:** Follow steps 1-16 in order. Each step names the reference
-file to read first. Use `templates/economy-model-template.md` as the output
-scaffold.
-
-**Validating an existing model:** Jump to section 05 (Rules and Quality Bar).
-For each rule you suspect is failing, read the associated reference and the
-relevant workflow step.
-
-**Diagnosing a live economy:** Start with `references/live-economy-monitoring.md`
-to set up metrics. Then `references/economy-case-studies.md` to match symptoms
-to known failure modes. Use section 07 (Failure Modes) for corrective moves.
+**Diagnosing a live economy:** Start with `references/live-economy-monitoring.md`,
+then `references/economy-case-studies.md` to match symptoms to known failure
+modes. Use section 07 (Failure Modes) for corrective moves.
