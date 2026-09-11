@@ -1,0 +1,15 @@
+# .leak-scan-tokens.example.txt
+# This is a PLACEHOLDER example file. The real forbidden-token list
+# is maintainer-held and never committed.
+#
+# The scanner (scripts/scan_leaks.py) reads .leak-scan-tokens.txt
+# (gitignored). Maintainers create that file from their private list
+# before each scan pass. The always-active patterns in scan_leaks.py
+# (home paths, emails, IPs, private keys) run regardless of this file.
+#
+# Replace these with actual tokens from your private maintainer list:
+#
+# project-name-codename
+# internal-server-hostname
+SOMETHING_PRIVATE
+SECRET_PROJECT
