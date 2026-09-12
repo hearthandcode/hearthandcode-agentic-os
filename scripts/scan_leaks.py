@@ -39,7 +39,7 @@ def load_token_list(path):
 
 
 def scan_file(filepath, patterns, token_list):
-    """Scan a single file. Returns list of (line_number, match_text, pattern_name)."""
+    """Scan a single file. Returns list of (filepath, line_number, match_text, pattern_name)."""
     findings = []
     try:
         with open(filepath, "r", errors="replace") as f:
@@ -48,11 +48,11 @@ def scan_file(filepath, patterns, token_list):
                 for pat, name in patterns:
                     m = re.search(pat, line, re.IGNORECASE)
                     if m:
-                        findings.append((i, m.group().strip()[:80], f"always-active: {name}"))
+                        findings.append((filepath, i, m.group().strip()[:80], f"always-active: {name}"))
                 # Check token list
                 for token in token_list:
                     if token.lower() in line.lower():
-                        findings.append((i, line.strip()[:80], f"token-match: {token}"))
+                        findings.append((filepath, i, line.strip()[:80], f"token-match: {token}"))
     except Exception:
         pass
     return findings
@@ -73,8 +73,8 @@ def main():
     findings = []
     file_count = 0
     for root, dirs, files in os.walk(repo_root):
-        # Skip .git, __pycache__, node_modules
-        dirs[:] = [d for d in dirs if d not in (".git", "__pycache__", "node_modules")]
+        # Skip .git, __pycache__, node_modules, docker (container configs use paths)
+        dirs[:] = [d for d in dirs if d not in (".git", "__pycache__", "node_modules", "docker")]
         for fn in files:
             if fn.endswith((".pyc", ".png", ".jpg", ".gif", ".ico")):
                 continue
@@ -94,17 +94,17 @@ def main():
                 for pat, name in ALWAYS_ACTIVE_PATTERNS:
                     m = re.search(pat, line, re.IGNORECASE)
                     if m:
-                        findings.append((f"git-log:{i}", m.group().strip()[:80], f"always-active: {name}"))
+                        findings.append(("git-log", i, m.group().strip()[:80], f"always-active: {name}"))
                 for token in token_list:
                     if token.lower() in line.lower():
-                        findings.append((f"git-log:{i}", line.strip()[:80], f"token-match: {token}"))
+                        findings.append(("git-log", i, line.strip()[:80], f"token-match: {token}"))
         except Exception:
             pass
 
     if findings:
         print(f"LEAKS FOUND ({len(findings)}):")
-        for line_num, match, pat_name in findings:
-            print(f"  {pat_name}: {line_num}: {match}")
+        for fpath, line_num, match, pat_name in findings:
+            print(f"  {pat_name}: {fpath}:{line_num}: {match}")
         sys.exit(1)
     else:
         print(f"Clean: {file_count} files scanned, 0 leaks found.")

@@ -60,6 +60,68 @@ PROFILE_ROLES = {
 
 # ── File Operations ──────────────────────────────────────────────────────────
 
+# Hub layout directory structures (NN-prefixed folders)
+HUB_LAYOUTS = {
+    "layer-mirror": {
+        "agents_template": "hub-templates/layer-mirror/hub-agents-template.md",
+        "directories": [
+            "01-orientation", "02-stewardship", "03-knowledge",
+            "04-planning", "05-craft", "06-review",
+            "07-delivery", "08-continuity",
+            "09-ops/01-decision-ledger/archive",
+            "09-ops/scripts", "09-ops/config",
+            "10-archive",
+        ],
+        "extra_files": [
+            ("09-ops/scripts/ack.py", "hub-templates/ack.py"),
+        ],
+    },
+    "workflow-pipeline": {
+        "agents_template": "hub-templates/workflow-pipeline/hub-agents-template.md",
+        "directories": [
+            "01-inbox", "02-scoped", "03-in-progress",
+            "04-review", "05-done", "06-archive",
+            "07-reference", "08-ops/01-decision-ledger/archive",
+            "08-ops/scripts", "08-ops/config",
+        ],
+        "extra_files": [
+            ("08-ops/scripts/ack.py", "hub-templates/ack.py"),
+        ],
+    },
+    "project-centric": {
+        "agents_template": "hub-templates/project-centric/hub-agents-template.md",
+        "directories": [
+            "01-projects", "02-notes", "03-research",
+            "04-drafts", "05-templates", "06-archive",
+            "07-reference", "08-ops/01-decision-ledger/archive",
+            "08-ops/scripts", "08-ops/config",
+        ],
+        "extra_files": [
+            ("08-ops/scripts/ack.py", "hub-templates/ack.py"),
+        ],
+    },
+    "topical-indexed": {
+        "agents_template": "hub-templates/topical-indexed/hub-agents-template.md",
+        "directories": [
+            "01-writing", "02-code", "03-design",
+            "04-planning", "05-research", "06-archive",
+            "07-templates", "08-meta/01-decision-ledger/archive",
+            "08-meta/scripts", "08-meta/config",
+        ],
+        "extra_files": [
+            ("08-meta/scripts/ack.py", "hub-templates/ack.py"),
+        ],
+    },
+}
+# Set of all source files from hub-templates/ that need to ship
+HUB_TEMPLATE_SOURCES = set()
+for cfg in HUB_LAYOUTS.values():
+    HUB_TEMPLATE_SOURCES.add(cfg["agents_template"])
+    for _, src in cfg["extra_files"]:
+        HUB_TEMPLATE_SOURCES.add(src)
+
+LAYOUT_NAMES = list(HUB_LAYOUTS.keys())
+
 class FileOp:
     """A single file operation: copy source to dest with kind metadata."""
     __slots__ = ("source", "dest", "kind")
@@ -181,9 +243,37 @@ def select_components(roster, kind, flags):
     return selected
 
 
-def build_plan(targets, hub_root, profiles, skills):
-    """Build a list of FileOps for the installation."""
+def build_plan(targets, hub_root, profiles, skills, hub_layout="layer-mirror"):
+    """Build a list of FileOps for the installation. Includes hub directory structure."""
     plan = []
+
+    # Add hub directory structure and AGENTS.md from template
+    layout_cfg = HUB_LAYOUTS.get(hub_layout, HUB_LAYOUTS["layer-mirror"])
+    # Create hub root directory itself
+    plan.append(FileOp(None, hub_root, "hub-dir"))
+    # AGENTS.md
+    agents_src = os.path.join(REPO_ROOT, layout_cfg["agents_template"])
+    agents_dst = os.path.join(hub_root, "AGENTS.md")
+    if os.path.isfile(agents_src):
+        plan.append(FileOp(agents_src, agents_dst, "hub-agents"))
+    # Directories
+    for rel_dir in layout_cfg["directories"]:
+        dst = os.path.join(hub_root, rel_dir)
+        plan.append(FileOp(None, dst, "hub-dir"))
+    # Extra files (ack.py, etc.)
+    for rel_dst, rel_src in layout_cfg["extra_files"]:
+        extra_src = os.path.join(REPO_ROOT, rel_src)
+        extra_dst = os.path.join(hub_root, rel_dst)
+        if os.path.isfile(extra_src):
+            plan.append(FileOp(extra_src, extra_dst, "hub-script"))
+    # Add decision-ledger README.md stub
+    ledger_root = [d for d in layout_cfg["directories"] if "decision-ledger" in d]
+    if ledger_root:
+        # Find the decision-ledger directory (parent of archive/)
+        ledger_dir = os.path.dirname(ledger_root[0])
+        ledger_path = os.path.join(hub_root, ledger_dir, "README.md")
+        if not any(op.dest == ledger_path for op in plan):
+            plan.append(FileOp(None, ledger_path, "hub-manifest"))
 
     for target in targets:
         if target == "hermes":
@@ -265,14 +355,27 @@ def apply_plan(plan, backup_dir):
             sha = None
             backed_up = None
             if op.source is None:
-                # config file — write inline content
-                os.makedirs(os.path.dirname(op.dest), exist_ok=True)
-                content = _scope_config_content(None)
-                if os.path.exists(op.dest):
-                    backed_up = os.path.dirname(op.dest)
-                with open(op.dest, "w") as f:
-                    f.write(content)
-                sha = sha256_file(op.dest)
+                # Hub directory or manifest stub
+                if op.kind == "hub-dir":
+                    os.makedirs(op.dest, exist_ok=True)
+                    results.append({"path": op.dest, "sha256": None, "kind": op.kind, "status": "ok", "backed_up_from": None})
+                    continue
+                elif op.kind == "hub-manifest":
+                    # Decision ledger README stub
+                    os.makedirs(os.path.dirname(op.dest), exist_ok=True)
+                    if not os.path.exists(op.dest):
+                        with open(op.dest, "w") as f:
+                            f.write("# Decision Ledger — Active\n\nAppend-only record of every ACK. One fenced YAML block per entry.\n")
+                    sha = sha256_file(op.dest) if os.path.isfile(op.dest) else None
+                else:
+                    # config file — write inline content
+                    os.makedirs(os.path.dirname(op.dest), exist_ok=True)
+                    content = _scope_config_content(None)
+                    if os.path.exists(op.dest):
+                        backed_up = os.path.dirname(op.dest)
+                    with open(op.dest, "w") as f:
+                        f.write(content)
+                    sha = sha256_file(op.dest)
             else:
                 if not os.path.isfile(op.source):
                     continue
@@ -399,6 +502,9 @@ def main():
                         help="Comma subset of {hermes, pi}; overrides interactive target choice")
     parser.add_argument("--hub-root", type=str,
                         help="Path; overrides interactive hub-root prompt")
+    parser.add_argument("--hub-layout", type=str, default=None,
+                        choices=["layer-mirror", "workflow-pipeline", "project-centric", "topical-indexed"],
+                        help="Hub directory layout template")
     parser.add_argument("--uninstall", action="store_true",
                         help="Remove exactly what the recorded manifest installed, then exit")
     parser.add_argument("--manifest", type=str,
@@ -480,8 +586,31 @@ def main():
         "skills", flags
     )
 
+    # ── Step 6b: Choose hub layout ──
+    LAYOUT_DESC = {
+        "layer-mirror": "Default 8-layer model mirror (01-orientation..08-continuity)",
+        "workflow-pipeline": "Task stage pipeline (01-inbox..05-done)",
+        "project-centric": "Portfolio by project (01-projects..06-archive)",
+        "topical-indexed": "Discipline groups (01-writing..05-research)",
+    }
+    layout = flags.hub_layout
+    if not layout and not flags.yes:
+        print("\n── Hub Layout Selection ──\n")
+        print("Choose the directory structure for your hub root:")
+        for i, name in enumerate(LAYOUT_NAMES, 1):
+            print(f"  [{i}] {name}: {LAYOUT_DESC[name]}")
+        print(f"  Default: {LAYOUT_NAMES[0]}")
+        choice = input(f"Select layout [1-4] (default 1): ").strip()
+        if choice.isdigit() and 1 <= int(choice) <= len(LAYOUT_NAMES):
+            layout = LAYOUT_NAMES[int(choice) - 1]
+        else:
+            layout = LAYOUT_NAMES[0]
+    elif not layout:
+        layout = LAYOUT_NAMES[0]
+    hub_layout = layout
+
     # ── Step 7: Preview ──
-    plan = build_plan(targets, hub_root, profiles, skills)
+    plan = build_plan(targets, hub_root, profiles, skills, hub_layout)
     preview_plan(plan)
 
     if flags.dry_run:
@@ -526,9 +655,14 @@ def main():
     print()
     print("Installation complete!")
     print()
+    install_locations = {
+        "hermes": ("~/.hermes/profiles/", "~/.hermes/skills/"),
+        "pi": ("~/.pi/agent/agents/", "~/.pi/agent/skills/"),
+    }
     for target in targets:
-        print(f"  {target.capitalize()} profiles installed to: ~/.{target}/profiles/")
-        print(f"  {target.capitalize()} skills installed to: ~/.{target}/skills/")
+        profiles_path, skills_path = install_locations[target]
+        print(f"  {target.capitalize()} profiles installed to: {profiles_path}")
+        print(f"  {target.capitalize()} skills installed to: {skills_path}")
         print()
     print(f"  Hub scope root: {hub_root}")
     print(f"  To load a profile: select the profile in your harness")
