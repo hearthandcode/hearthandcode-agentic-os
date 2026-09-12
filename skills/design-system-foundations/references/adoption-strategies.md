@@ -48,6 +48,27 @@ Monthly: a demo of the system's newest components and the first-adopter's result
 
 Quarterly: a governance review with the governance body. The system team presents adoption metrics, open issues, and the roadmap for the next quarter. The governance body approves or blocks the roadmap items. Minutes are published.
 
+## Choosing the first-adopter surface
+
+The first-adopter surface is a one-way door: it becomes the proof, the case study, and the demo. Choose it with a checklist, not a preference:
+
+1. **Frequently visited.** A surface users see daily gives every improvement maximum visibility.
+2. **Owned by a volunteering team.** Assigned pilots perform worse and generate defensive feedback.
+3. **Representative, not extreme.** It must exercise the common components (buttons, inputs, cards, tables), not one exotic visualization.
+4. **Bounded.** Shippable within Phase 1's timebox — a six-month rebuild cannot prove anything by day 30.
+5. **Measurable.** Render time, CSS import count, and build time must be recordable before and after, because the numbers are the argument.
+
+Score every candidate against all five before committing. A surface that wins on visibility but fails on boundedness produces a half-built showcase and a skeptical second team.
+
+## When adoption stalls
+
+A stalled Phase 2 looks like this: adoption rate plateaus at 40-60%, requests to the system team dry up, and consuming teams quietly re-derive local variants. The causes have known correctives:
+
+1. **The component almost fits.** Teams bend the system until it breaks, then write their own. Fix: run the five most-copied local variants through the inventory audit — the mismatch is real information, and absorbing it as a variant is cheaper than losing the team.
+2. **The migration cost is invisible.** Teams guess the effort, guess high, and skip it. Fix: publish per-surface migration numbers from the last three migrations and offer a pairing session for the next.
+3. **The system team went quiet.** Requests sit unanswered and the weekly post lapsed. Fix: answer every open request within one cadence, even when the answer is "not yet" — silence is how pull dies.
+4. **No one can see it working.** Metrics were never published. Fix: restart the weekly post with one adoption number and one pull number, every week, until the trend is visible.
+
 ## Anti-patterns
 
 - **The big-bang migration.** Six months of building, then a forced switchover across all teams. The switchover date slips three times, the migration guide is obsolete by the time it lands, and teams who had working UIs now have broken ones. The big bang is how design systems fail in public.

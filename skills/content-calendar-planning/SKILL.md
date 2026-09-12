@@ -469,7 +469,8 @@ professional feed platforms. Deliverable: a 4-week calendar.
 
 **Capacity (measured).** 6 hours per week — Monday 2h (outlines), Wednesday 2h
 (draft + edit), Friday 1h (cuts + scheduling), 1h reserve. Per asset: newsletter
-essay 3.0h, short post 0.4h, feed post 0.6h, thread 1.2h (placeholder).
+essay 3.0h, short post 0.4h, feed post 0.6h, thread 1.2h (estimated until the
+first thread is timed, then replaced with the measured value).
 
 **Cadence math.** 6h = 1 essay (3.0) + 3 cuts (0.8 + 0.6 = 1.4) + 1 independent
 (0.4) = 4.8h. Margin: 1.2h. Commitment: 1 anchor + 3 cuts + 1 independent per

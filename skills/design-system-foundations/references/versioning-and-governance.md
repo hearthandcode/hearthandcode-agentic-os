@@ -60,6 +60,29 @@ Component changes follow the same tracks but add a consumer impact assessment st
 
 The governance body has standing members (three) and rotating representatives from consuming teams (one per team, changes each meeting cycle). Standing members: the system lead (designer), the system lead (engineer), and the accessibility representative. Consuming team representatives serve a two-cycle term with one overlap, so no meeting has an entirely new member.
 
+## The token removal runbook
+
+Removals stall in practice because no one owns the sequence. This runbook makes a removal a series of dated, mechanical steps:
+
+1. **Announce (day 0).** The deprecation notice names the token, the replacement, the removal version, and one migration line per known use surface.
+2. **Alias (same release).** Ship the old name as a generated alias of the new token, emitting a build warning. Consumers get identical rendering plus a migration path in their own build logs — the warning does the advocacy for you.
+3. **Count down in public.** Each release's notes restate the removal version and the current number of alias references in tracked repos. A removal with visible momentum finishes; a silent one drags for quarters.
+4. **Hard removal (target release).** Delete the alias. Any consumer who missed two releases plus a public countdown gets a build error pointing at the migration line — which is the contract working, not a betrayal.
+5. **Post-removal review.** One line in the next governance meeting: how many references broke, how many issues resulted, whether the estimate was honest. The numbers calibrate the next deprecation window.
+
+Run steps 2-4 for the two-release minimum from the deprecation policy above, and never shorten the window for release pressure — the shortcut is how the next removal loses its audience.
+
+## Measuring governance health
+
+Governance can fail while every individual decision looks fine. Track four numbers, publish them with the meeting minutes:
+
+1. **Decision latency.** Median days from proposal to decision, per track. Fast-track items should clear inside a week; a standard-track median growing past two weeks means review capacity, not process, is the bottleneck.
+2. **Table-and-return rate.** The share of proposals tabled at least once. Healthy is roughly one in five — zero means reviewers rubber-stamp, and one in two means proposals arrive unready, which is a coaching problem, not a gate problem.
+3. **Exception count.** Approved exceptions to any policy, per quarter, with expiry dates. Rising exceptions mean the policy no longer fits reality — revise the policy rather than normalizing the bypass.
+4. **Consumer representation.** The share of governance meetings with at least one consuming-team representative present. Decisions made in an empty quorum get reopened in production.
+
+When any number crosses its threshold — latency doubling, exceptions compounding quarter over quarter — treat it as an agenda item, not trivia. The governance body that watches its own metrics is the one that earns the authority to gate other people's releases.
+
 ## Escalation path
 
 When governance reaches an impasse (a change is tabled twice or a release is blocked for more than two weeks), the escalation path is: system lead (engineer and designer together) decides. That decision is published with the reasoning, and the change is revisited after three MINOR releases to evaluate whether its assumptions held.

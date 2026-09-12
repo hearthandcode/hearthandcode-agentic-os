@@ -42,6 +42,28 @@ The token file is a contract, so it needs a schema (see `schemas/design-tokens.s
 
 Every semantic token is a theme slot whether you intend it or not. Design them so a dark theme is a value swap: for each semantic token, know its dark-mode counterpart at the moment you name it. If a semantic token has no sensible dark value ("this gradient only works on white"), the token is really a component token — move it down a tier and let the component own the exception. Full theming architecture, including brand variants and contrast enforcement, is covered in `theming-architecture.md`.
 
+## Extracting tokens from an existing UI
+
+No team writes a token file on a blank page; the tokens already exist, uncounted and unnamed, in stylesheets and mockups. Extraction beats invention because the product's real needs are visible in what people already wrote:
+
+1. **Harvest, then sort.** Sweep every stylesheet and design file for literal color, spacing, radius, and font values. Deduplicate with a tolerance (grays within a few percent of each other collapse to one). The raw count is usually 3-10x what the final set will be.
+2. **Cluster before naming.** Group values by role — page backgrounds, borders, text, focus rings. A cluster that spans many distinct values is the strongest candidate for a semantic token, because it proves the job exists.
+3. **Name the survivors by job.** Only after clustering. Names derived from values before clustering become obsolete at the first rebrand.
+4. **Set a convergence budget.** If the harvest found 34 grays, decide now how many survive (6-9 in the neutral ramp). Values that miss the budget migrate to their nearest survivor, never "temporarily" kept.
+5. **Ship with a deprecation shim.** Old names map to new tokens through generated aliases that log a warning, so product code can migrate gradually while grep-ability improves with every merged PR.
+
+## The token audit checklist
+
+Run before a major release, and quarterly regardless. Each "no" is a work item:
+
+1. Every color used in product markup resolves to a token — grep for hex literals outside the token file; each hit is a leak.
+2. Every semantic token's value matches its name (a `color-text-disabled` lighter than `color-text-secondary` needs a rename or a value change).
+3. The semantic tier is smaller than the primitive tier, and no token references a token in a higher tier.
+4. Every semantic token has a dark-theme counterpart value recorded, even if the theme ships later.
+5. Contrast pairs are documented for every text/background combination actually used together.
+6. The ten least-referenced tokens of the last quarter are listed for removal review.
+7. The token file validates against `schemas/design-tokens.schema.json` in this skill, and the diff between the last two versions contains no unexplained value changes.
+
 ## Anti-patterns
 
 - **The mirror tier.** A semantic layer that is a 1:1 rename of primitives (`color-blue-600-semantic`). Indirection with no change of meaning is cost without benefit; the semantic layer should be much smaller than the primitive layer.

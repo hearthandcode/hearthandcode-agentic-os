@@ -669,8 +669,9 @@ file to read first. Use `templates/economy-model-template.md` as the output
 scaffold.
 
 **Validating an existing model:** Jump to section 05 (Rules and Quality Bar).
+Run each rule as a pass/fail checklist against the model's current parameters.
 For each suspect rule, read the associated reference and the relevant workflow
-step.
+step to find the corrective lever.
 
 **Diagnosing a live economy:** Start with `references/live-economy-monitoring.md`,
 then `references/economy-case-studies.md` to match symptoms to known failure

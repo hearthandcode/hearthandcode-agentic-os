@@ -44,6 +44,28 @@ The first-adopter surface was the contract signing flow — the surface the ente
 
 ---
 
+## Reading a case study without copying it
+
+Case studies persuade by narrative; systems succeed by fit. Before transferring any pattern from Veridius or Dovetail to your own context, run it through four questions:
+
+1. **What constraint produced this decision?** Dovetail's a11y-first sequencing came from a contract clause. If your constraint is a rebrand, not a compliance deadline, the same sequencing buys you less.
+2. **What did the team give up?** Veridius's 50%-allocated pair shipped slower per person but learned twice as fast. Name the cost you would pay, or you are importing the benefit while denying the bill.
+3. **Is the metric portable?** A pull ratio only means something where teams can withhold requests. In a five-person company where everyone shares a manager, the number will flatter whatever you already do.
+4. **What is the failure story's mirror?** Every case study's "what we would do differently" is the more transferable half — the successes are partly luck; the mistakes are structural.
+
+A pattern that survives all four questions is a hypothesis for your system, not a conclusion from someone else's. Adopt it with a review date attached.
+
+## A third case, abbreviated: the system nobody asked for
+
+For contrast, the failure case is worth studying because its early signals are quiet. A 30-person company mandated a design system from the top: one engineer was assigned "in addition to current duties," no consuming team was consulted, and the roadmap was a 40-component list copied from a public design system's website. Signals as they appeared:
+
+- **Week 2.** The component list was finalized before anyone inventoried the product. None of the product's actual tables, filters, or wizards appeared on it. (Signal: a roadmap with no audit behind it.)
+- **Week 6.** The first components shipped to no consumers; adoption was unmeasurable because no surface had agreed to use them. (Signal: a phase model with no first adopter.)
+- **Week 12.** A consuming team shipped its own card component to hit a deadline, citing system latency. The incident was reported as team noncompliance rather than system unavailability. (Signal: the system blamed its customers.)
+- **Week 20.** The assigned engineer returned to product work full time. The system's repository still accepted commits, and nothing broke — which was the problem. (Signal: governance scheduled by calendar, not by adoption thresholds.)
+
+By the measures in this skill — pull ratio, adoption rate, first-adopter surface inside 30 days — the system never existed. The corrective sequence at each signal is the same as the phases above: audit before roadmap, one volunteering surface before any library growth, embedded rotation before governance. The lesson is not that mandates fail; it is that capacity and consent are prerequisites, and every week they are missing shows up later as an adoption debt that compounds.
+
 ## Abstraction: Transferable patterns
 
 Across both case studies, five patterns produced results:
