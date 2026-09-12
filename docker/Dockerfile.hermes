@@ -1,0 +1,33 @@
+# Dockerfile.hermes — Hermes Agent container for hearthandcode-agentic-os
+ARG PYTHON_VERSION=3.12-slim
+FROM python:${PYTHON_VERSION}
+
+LABEL description="hearthandcode-agentic-os on Hermes Agent"
+LABEL maintainer="hearthandcode"
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -s /bin/bash user
+
+# Install Hermes Agent CLI
+RUN pip install --no-cache-dir hermes-agent
+
+# Copy the agentic-os repository
+COPY --chown=user:user . /opt/hearthandcode-agentic-os
+
+# Create hub root
+RUN mkdir -p /home/user/agentic-hub && chown -R user:user /home/user
+
+USER user
+WORKDIR /home/user
+
+# Entry: install profiles+skills into Hermes, then run Hermes TUI
+ENTRYPOINT ["/bin/bash", "-c", "\
+    python3 /opt/hearthandcode-agentic-os/install.py --yes --target hermes \
+    && hermes chat \
+"]

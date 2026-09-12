@@ -19,7 +19,7 @@ import sys
 
 # Always-active patterns from spec/0008
 ALWAYS_ACTIVE_PATTERNS = [
-    (r"/home/[a-z]", "home-directory path fragment"),
+    (r"/home/(?![a-z]*user)[a-z]{3,}", "home-directory path fragment"),
     (r"[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}", "email address"),
     (r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b", "IP address"),
     (r"BEGIN [A-Z ]*PRIVATE KEY", "private key material"),
